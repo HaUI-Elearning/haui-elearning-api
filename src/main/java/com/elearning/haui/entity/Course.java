@@ -1,64 +1,38 @@
 package com.elearning.haui.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "courses")
+@Data
 public class Course {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long courseId;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(nullable = false)
+    private String courseTitle;
 
-    @Column
-    private String thumbnail;
-
-    @Column(nullable = false, length = 100)
-    private String title;
-
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column
-    private String contents;
-
     @Column(nullable = false)
-    private float star;
+    private String status; // e.g., "active", "inactive"
 
-    @Column(nullable = false)
-    private int hour;
+    @ManyToOne
+    @JoinColumn(name = "instructor_id", nullable = false)
+    private Instructor instructor;
 
-    @Column(nullable = false)
-    private double price;
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
-    @Column(length = 100)
-    private String author;
+    private Double price;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @OneToMany(mappedBy = "course")
-    private List<Enrollment> enrollments;
-
-    @OneToMany(mappedBy = "course")
-    private List<Review> reviews;
-
-    @ManyToMany
-    @JoinTable(name = "CourseCategories", joinColumns = @JoinColumn(name = "course_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private List<Category> categories;
-
+    private String currency;
 }

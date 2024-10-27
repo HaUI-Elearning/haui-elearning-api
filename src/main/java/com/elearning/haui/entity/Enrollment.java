@@ -1,34 +1,31 @@
 package com.elearning.haui.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import java.time.LocalDate;
 
-import java.time.LocalDateTime;
-
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "enrollments")
+@Data
 public class Enrollment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long enrollmentId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
 
     @ManyToOne
-    @JoinColumn(name = "course_id")
+    @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(name = "enrollment_date", nullable = false)
-    private LocalDateTime enrollmentDate = LocalDateTime.now();
+    private LocalDate enrollmentDate;
 
+    @Column(nullable = false)
+    private String status; // e.g., "pending", "completed"
 }

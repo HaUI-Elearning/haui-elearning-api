@@ -8,22 +8,23 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users")
+@Table(name = "instructors")
 @Data
-public class User {
+public class Instructor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
-
-    @Column(nullable = false, unique = true)
-    private String username;
+    private Long instructorId;
 
     @Column(nullable = false)
-    private String password;
+    private String name;
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
-    private String role; // Example roles: "student", "instructor", "admin"
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    private String specialization;
+
+    private String photoURL;
 }
