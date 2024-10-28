@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,7 +27,7 @@ public class Category {
 
     @Column(nullable = false, unique = true, length = 50)
     private String name;
-
-    @ManyToMany(mappedBy = "categories")
-    private List<Course> courses;
+    
+    @OneToMany(mappedBy = "category")
+    private List<CourseCategory> courseCategories;
 }

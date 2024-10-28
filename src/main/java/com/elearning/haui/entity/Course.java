@@ -27,9 +27,6 @@ public class Course {
     @Column
     private String thumbnail;
 
-    @Column(nullable = false, length = 100)
-    private String title;
-
     @Column
     private String description;
 
@@ -56,9 +53,5 @@ public class Course {
 
     @OneToMany(mappedBy = "course")
     private List<Review> reviews;
-
-    @ManyToMany
-    @JoinTable(name = "CourseCategories", joinColumns = @JoinColumn(name = "course_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private List<Category> categories;
 
 }
