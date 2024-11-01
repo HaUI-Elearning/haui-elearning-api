@@ -1,3 +1,30 @@
+<style>
+    /* Lower the dropdown menu position */
+    .navbar-nav .dropdown-menu {
+        margin-top: 1rem;
+        /* Add space between navbar and dropdown */
+        z-index: 1050;
+        /* Ensure the dropdown appears on top */
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        transform: translateY(10px);
+        /* Start slightly down for a smooth transition */
+        opacity: 0;
+        display: block;
+        visibility: hidden;
+        right: 0;
+        /* Align dropdown to the left */
+        left: auto;
+    }
+
+    .navbar-nav .dropdown:hover .dropdown-menu,
+    .navbar-nav .dropdown-menu.show {
+        transform: translateY(0);
+        /* Reset to position when active */
+        opacity: 1;
+        visibility: visible;
+    }
+</style>
+
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
     <!-- Navbar Brand-->
     <a class="navbar-brand ps-3" href="/admin">HaUI Elearning</a>

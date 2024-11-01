@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
@@ -38,10 +40,14 @@ public class UserController {
     }
 
     @GetMapping("/admin/user")
-    public String getUserPage(Model model) {
-        List<User> users = this.userService.getAllUsers();
-        model.addAttribute("users", users);
-        return "admin/user/show";
+    public String viewUsersPage(Model model,
+            @RequestParam(defaultValue = "1") int page) {
+        int pageSize = 2; // Number of records per page
+        Page<User> userPage = userService.findPaginated(PageRequest.of(page - 1, pageSize));
+        model.addAttribute("users", userPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        return "admin/user/show"; // The name of your JSP page
     }
 
     @GetMapping("/admin/user/create")
@@ -55,14 +61,11 @@ public class UserController {
             @ModelAttribute("newUser") User newUser,
             @RequestParam("role.name") String roleName) {
 
-        // Tìm vai trò theo tên trong cơ sở dữ liệu
-        Role role = roleService.findByName(roleName); // Tìm vai trò trong DB
-
+        Role role = roleService.findByName(roleName);
         newUser.setRole(role);
-
         userService.handleSaveUser(newUser);
 
-        return "hello"; // Chuyển hướng đến trang danh sách người dùng
+        return "redirect:/admin/user";
     }
 
     @RequestMapping("/admin/user/{id}")
@@ -101,4 +104,5 @@ public class UserController {
         this.userService.removeById(delUser.getUserId());
         return "redirect:/admin/user";
     }
+
 }

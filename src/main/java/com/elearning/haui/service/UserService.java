@@ -2,6 +2,8 @@ package com.elearning.haui.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.elearning.haui.entity.User;
@@ -35,4 +37,7 @@ public class UserService {
         this.userRepository.deleteById(id);
     }
 
+    public Page<User> findPaginated(PageRequest pageRequest) {
+        return userRepository.findAll(pageRequest);
+    }
 }
