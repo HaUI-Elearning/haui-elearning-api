@@ -18,12 +18,10 @@ public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long roleId;
+    private long Id;
 
-    @Column(nullable = false, unique = true, length = 50)
     private String name;
 
-    @Column(nullable = false)
     private String description;
 
     @OneToMany(mappedBy = "role")
