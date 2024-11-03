@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
@@ -28,21 +29,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class UserController {
     private final UserService userService;
     private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService, RoleService roleService) {
+    public UserController(UserService userService, RoleService roleService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.roleService = roleService;
-    }
-
-    @GetMapping("/")
-    public String hello() {
-        return "hello";
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/admin/user")
     public String viewUsersPage(Model model,
             @RequestParam(defaultValue = "1") int page) {
-        int pageSize = 2; // Number of records per page
+        int pageSize = 10; // Number of records per page
         Page<User> userPage = userService.findPaginated(PageRequest.of(page - 1, pageSize));
         model.addAttribute("users", userPage.getContent());
         model.addAttribute("currentPage", page);
@@ -63,6 +61,7 @@ public class UserController {
 
         Role role = roleService.findByName(roleName);
         newUser.setRole(role);
+        newUser.setPassword(this.passwordEncoder.encode(newUser.getPassword()));
         userService.handleSaveUser(newUser);
 
         return "redirect:/admin/user";
@@ -82,7 +81,7 @@ public class UserController {
         return "admin/user/update";
     }
 
-    @PostMapping(value = "/admin/user/update")
+    @PostMapping("/admin/user/update")
     public String updateUser(Model model, @ModelAttribute("updateUser") User updateUser) {
         User currentUser = this.userService.getUserById(updateUser.getUserId());
         currentUser.setIntroduce(updateUser.getIntroduce());

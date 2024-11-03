@@ -14,7 +14,7 @@
 </head>
 
 <body>
-    <h1>Hello from JPA</h1>
+    <h1>Hello from HaUI Elearning</h1>
 
 
 </body>

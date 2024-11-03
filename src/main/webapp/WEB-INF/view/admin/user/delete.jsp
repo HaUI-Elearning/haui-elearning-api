@@ -42,11 +42,12 @@
                                                         Are you sure you want to delete this user?
                                                     </div>
                                                     <!-- Form with modal confirmation -->
-                                                    <form:form method="post" action="/admin/user/delete"
+                                                    <form:form id="deleteForm" method="post" action="/admin/user/delete"
                                                         modelAttribute="delUser">
                                                         <div style="display: none;">
                                                             <label for="userId"><b>ID</b></label>
-                                                            <form:input type="text" path="userId" value="${userId}" />
+                                                            <form:input type="text" path="userId"
+                                                                value="${delUser.userId}" />
                                                         </div>
                                                         <button type="button" class="btn btn-danger"
                                                             data-bs-toggle="modal"
@@ -80,7 +81,8 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                 <button type="button" class="btn btn-danger"
-                                    onclick="document.forms[0].submit();">Delete</button>
+                                    onclick="$('#deleteForm').submit();">Delete</button>
+
                             </div>
                         </div>
                     </div>

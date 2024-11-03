@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.elearning.haui.dto.RegisterDTO;
+import com.elearning.haui.entity.Role;
 import com.elearning.haui.entity.User;
 import com.elearning.haui.repository.UserRepository;
 
@@ -39,5 +41,29 @@ public class UserService {
 
     public Page<User> findPaginated(PageRequest pageRequest) {
         return userRepository.findAll(pageRequest);
+    }
+
+    public User registerDTOtoUser(RegisterDTO registerDTO) {
+        User user = new User();
+        user.setName(registerDTO.getName());
+        user.setUsername(registerDTO.getUsername());
+        user.setPassword(registerDTO.getPassword());
+        user.setEmail(registerDTO.getEmail());
+        Role role = new Role();
+        role.setId(1L);
+        user.setRole(role);
+        return user;
+    }
+
+    public boolean checkEmailExist(String email) {
+        return this.userRepository.existsByEmail(email);
+    }
+
+    public boolean checkUsernameExist(String username) {
+        return this.userRepository.existsByUsername(username);
+    }
+
+    public User getUserByUsername(String username) {
+        return this.userRepository.findByUsername(username);
     }
 }
