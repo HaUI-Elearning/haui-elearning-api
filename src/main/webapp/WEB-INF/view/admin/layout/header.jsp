@@ -1,8 +1,8 @@
 <style>
     /* Lower the dropdown menu position */
     .navbar-nav .dropdown-menu {
-        margin-top: 1rem;
-        /* Add space between navbar and dropdown */
+        margin-top: 0;
+        /* Set margin-top to 0 to remove space between navbar and dropdown */
         z-index: 1050;
         /* Ensure the dropdown appears on top */
         transition: transform 0.3s ease, opacity 0.3s ease;
@@ -25,6 +25,7 @@
     }
 </style>
 
+
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
     <!-- Navbar Brand-->
     <a class="navbar-brand ps-3" href="/admin">HaUI Elearning</a>
@@ -46,7 +47,10 @@
                 <li>
                     <hr class="dropdown-divider" />
                 </li>
-                <li><a class="dropdown-item" href="#!">Logout</a></li>
+                <form method="post" action="/logout">
+                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                    <button><a class="dropdown-item">Logout</a></button>
+                </form>
             </ul>
         </li>
     </ul>
