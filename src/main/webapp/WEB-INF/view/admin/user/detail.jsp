@@ -221,6 +221,34 @@
                                                     <li class="list-group-item">Introduce: ${user.introduce}</li>
                                                 </ul>
                                             </div>
+                                             <!-- Hiển thị danh sách các khóa học đang tham gia -->
+                                            <h3 class="mt-4">Enrolled Courses</h3>
+                                            <table class="table table-striped mt-3">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Course ID</th>
+                                                        <th>Name</th>
+                                                        <th>Description</th>
+                                                        <th>Author</th>
+                                                        <th>Hours</th>
+                                                        <th>Price</th>
+                                                        <th>Star Rating</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <c:forEach var="course" items="${courses}">
+                                                        <tr>
+                                                            <td>${course.courseId}</td>
+                                                            <td>${course.name}</td>
+                                                            <td>${course.description}</td>
+                                                            <td>${course.author}</td>
+                                                            <td>${course.hour}</td>
+                                                            <td><fmt:formatNumber value="${course.price}" type="currency" /></td>
+                                                            <td>${course.star}</td>
+                                                        </tr>
+                                                    </c:forEach>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                     <a href="/admin/user" class="btn btn-success mt-3">Back</a>

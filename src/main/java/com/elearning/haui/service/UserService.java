@@ -1,5 +1,6 @@
 package com.elearning.haui.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -7,6 +8,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.elearning.haui.dto.RegisterDTO;
+import com.elearning.haui.entity.Course;
+import com.elearning.haui.entity.Enrollment;
 import com.elearning.haui.entity.Role;
 import com.elearning.haui.entity.User;
 import com.elearning.haui.repository.UserRepository;
@@ -14,9 +17,11 @@ import com.elearning.haui.repository.UserRepository;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final EnrollmentService enrollmentService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, EnrollmentService enrollmentService) {
         this.userRepository = userRepository;
+        this.enrollmentService = enrollmentService;
     }
 
     public User handleSaveUser(User user) {
@@ -65,5 +70,22 @@ public class UserService {
 
     public User getUserByUsername(String username) {
         return this.userRepository.findByUsername(username);
+    }
+
+    public List<Course> getCourseEnrollment(Long userId) {
+        List<Course> results = new ArrayList<>();
+        List<Enrollment> enrollment = this.enrollmentService.getEnrollmentByUserId(userId);
+        if (enrollment.size() == 0) {
+            return null;
+        }
+        for (Enrollment e : enrollment) {
+            results.add(e.getCourse());
+        }
+        return results;
+    }
+
+    // Đếm số lượng user
+    public long countUsers() {
+        return userRepository.count();
     }
 }

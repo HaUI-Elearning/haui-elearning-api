@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
+import com.elearning.haui.entity.Course;
 import com.elearning.haui.entity.Role;
 import com.elearning.haui.entity.User;
 
@@ -70,7 +71,9 @@ public class UserController {
     @RequestMapping("/admin/user/{id}")
     public String getUserDetailPage(Model model, @PathVariable long id) {
         User user = this.userService.getUserById(id);
+        List<Course> courses = this.userService.getCourseEnrollment(id);
         model.addAttribute("user", user);
+        model.addAttribute("courses", courses);
         return "admin/user/detail";
     }
 
