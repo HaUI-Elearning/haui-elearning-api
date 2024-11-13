@@ -231,18 +231,43 @@
                                             <!-- Pagination -->
                                             <nav aria-label="Page navigation example">
                                                 <ul class="pagination justify-content-center">
-                                                    <li class="page-item">
-                                                        <a class="page-link" href="#" aria-label="Previous">
+                                                    <!-- Previous button -->
+                                                    <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                                                        <a class="page-link" href="?page=${currentPage - 1}"
+                                                            aria-label="Previous">
                                                             <span aria-hidden="true">&laquo;</span>
                                                         </a>
                                                     </li>
-                                                    <c:forEach var="i" begin="1" end="${totalPages}">
+
+                                                    <!-- If there are pages before the displayed range, show '1' and an ellipsis -->
+                                                    <c:if test="${totalPages > 5 && currentPage > 3}">
+                                                        <li class="page-item"><a class="page-link" href="?page=1">1</a>
+                                                        </li>
+                                                        <li class="page-item disabled"><span
+                                                                class="page-link">...</span></li>
+                                                    </c:if>
+
+                                                    <!-- Loop through a maximum of 5 pages around the current page -->
+                                                    <c:forEach var="i" begin="${currentPage > 3 ? currentPage - 2 : 1}"
+                                                        end="${(currentPage > totalPages - 3) ? totalPages : (currentPage > 3 ? currentPage + 2 : 5)}">
                                                         <li class="page-item ${currentPage == i ? 'active' : ''}">
                                                             <a class="page-link" href="?page=${i}">${i}</a>
                                                         </li>
                                                     </c:forEach>
-                                                    <li class="page-item">
-                                                        <a class="page-link" href="#" aria-label="Next">
+
+                                                    <!-- If there are pages after the displayed range, show an ellipsis and the last page -->
+                                                    <c:if test="${totalPages > 5 && currentPage < totalPages - 2}">
+                                                        <li class="page-item disabled"><span
+                                                                class="page-link">...</span></li>
+                                                        <li class="page-item"><a class="page-link"
+                                                                href="?page=${totalPages}">${totalPages}</a></li>
+                                                    </c:if>
+
+                                                    <!-- Next button -->
+                                                    <li
+                                                        class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                                                        <a class="page-link" href="?page=${currentPage + 1}"
+                                                            aria-label="Next">
                                                             <span aria-hidden="true">&raquo;</span>
                                                         </a>
                                                     </li>
