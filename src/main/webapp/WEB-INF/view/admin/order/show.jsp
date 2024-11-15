@@ -14,7 +14,7 @@
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
                 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
                 <link href="/css/styles.css" rel="stylesheet" />
-                <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+                <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js"></script>
                 <style>
                     #customNavbar {
                         background-color: #343a40;
@@ -175,6 +175,32 @@
                         color: white;
                         border: none;
                     }
+
+                    /* Màu sắc cho các trạng thái đơn hàng */
+                    .badge.bg-warning {
+                        background-color: #ffc107;
+                        /* Màu vàng cho trạng thái PENDING */
+                    }
+
+                    .badge.bg-primary {
+                        background-color: #007bff;
+                        /* Màu xanh dương cho trạng thái PROCESSING */
+                    }
+
+                    .badge.bg-success {
+                        background-color: #28a745;
+                        /* Màu xanh lá cho trạng thái COMPLETED */
+                    }
+
+                    .badge.bg-danger {
+                        background-color: #dc3545;
+                        /* Màu đỏ cho trạng thái CANCELLED */
+                    }
+
+                    .badge.bg-secondary {
+                        background-color: #6c757d;
+                        /* Màu xám cho trạng thái UNKNOWN */
+                    }
                 </style>
             </head>
 
@@ -194,7 +220,6 @@
                                         <div class="col-12 mx-auto">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <h3>Table Orders</h3>
-                                                <a href="/admin/order/create" class="btn btn-primary">Create a order</a>
                                             </div>
                                             <hr />
                                             <table class="table table-striped table-hover">
@@ -215,11 +240,51 @@
                                                             <td>${order.orderId}</td>
                                                             <td>${order.user.name}</td>
                                                             <td>${order.orderDate}</td>
-                                                            <td>${order.status}</td>
+                                                            <td>
+                                                                <!-- Dropdown for status selection -->
+                                                                <div class="dropdown">
+                                                                    <button
+                                                                        class="btn btn-sm 
+                                                                        ${order.status == 'PENDING' ? 'bg-warning' : 
+                                                                        (order.status == 'PROCESSING' ? 'bg-primary' : 
+                                                                        (order.status == 'COMPLETED' ? 'bg-success' : 
+                                                                        (order.status == 'CANCELLED' ? 'bg-danger' : 'bg-secondary')))} dropdown-toggle"
+                                                                        type="button"
+                                                                        id="statusDropdown${order.orderId}"
+                                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                                        ${order.status}
+                                                                        <!-- Hiển thị trạng thái hiện tại -->
+                                                                    </button>
+                                                                    <ul class="dropdown-menu"
+                                                                        aria-labelledby="statusDropdown${order.orderId}">
+                                                                        <!-- Check if the current status is 'PENDING', 'PROCESSING', etc., and hide the corresponding option -->
+                                                                        <c:if test="${order.status != 'PENDING'}">
+                                                                            <li><a class="dropdown-item"
+                                                                                    href="/admin/order/updateStatus/${order.orderId}?status=PENDING">PENDING</a>
+                                                                            </li>
+                                                                        </c:if>
+                                                                        <c:if test="${order.status != 'PROCESSING'}">
+                                                                            <li><a class="dropdown-item"
+                                                                                    href="/admin/order/updateStatus/${order.orderId}?status=PROCESSING">PROCESSING</a>
+                                                                            </li>
+                                                                        </c:if>
+                                                                        <c:if test="${order.status != 'COMPLETED'}">
+                                                                            <li><a class="dropdown-item"
+                                                                                    href="/admin/order/updateStatus/${order.orderId}?status=COMPLETED">COMPLETED</a>
+                                                                            </li>
+                                                                        </c:if>
+                                                                        <c:if test="${order.status != 'CANCELLED'}">
+                                                                            <li><a class="dropdown-item"
+                                                                                    href="/admin/order/updateStatus/${order.orderId}?status=CANCELLED">CANCELLED</a>
+                                                                            </li>
+                                                                        </c:if>
+                                                                    </ul>
+                                                                </div>
+                                                            </td>
                                                             <td>${order.totalAmount}</td>
                                                             <td>${order.paymentMethod}</td>
                                                             <td>
-                                                                <a href="/admin/product/${order.orderId}"
+                                                                <a href="/admin/order/${order.orderId}"
                                                                     class="btn btn-success btn-sm">View</a>
                                                                 <a href="/admin/product/update/${order.orderId}"
                                                                     class="btn btn-warning btn-sm">Update</a>
@@ -283,6 +348,48 @@
                         <jsp:include page="../layout/footer.jsp" />
                     </div>
                 </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        var dropdowns = document.querySelectorAll('.dropdown-toggle');
+
+                        dropdowns.forEach(function (dropdown) {
+                            dropdown.addEventListener('click', function () {
+                                var menu = this.nextElementSibling;
+                                var isVisible = menu.classList.contains('show');
+                                var allMenus = document.querySelectorAll('.dropdown-menu');
+
+                                // Đóng tất cả các menu
+                                allMenus.forEach(function (m) {
+                                    m.classList.remove('show');
+                                });
+
+                                // Nếu menu hiện tại không mở, mở nó
+                                if (!isVisible) {
+                                    menu.classList.add('show');
+                                }
+                            });
+                        });
+
+                        // Đóng dropdown nếu click ra ngoài
+                        document.addEventListener('click', function (event) {
+                            if (!event.target.closest('.dropdown')) {
+                                document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+                                    menu.classList.remove('show');
+                                });
+                            }
+                        });
+
+                        // Thêm sự kiện cho các lựa chọn trong dropdown để cập nhật trạng thái
+                        var menuItems = document.querySelectorAll('.dropdown-item');
+                        menuItems.forEach(function (item) {
+                            item.addEventListener('click', function () {
+                                var status = this.innerText;
+                                var button = this.closest('.dropdown').querySelector('.dropdown-toggle');
+                                button.innerText = status; // Cập nhật trạng thái trên nút
+                            });
+                        });
+                    });
+                </script>
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
                     crossorigin="anonymous"></script>
             </body>

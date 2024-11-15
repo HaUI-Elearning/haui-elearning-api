@@ -1,4 +1,4 @@
-package com.elearning.haui.entity;
+package com.elearning.haui.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+
+import com.elearning.haui.enums.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Getter
 @Setter
@@ -26,8 +29,9 @@ public class Order {
     @Column(name = "order_date", nullable = false)
     private Timestamp orderDate;
 
-    @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING) // Lưu giá trị Enum dưới dạng chuỗi
+    @Column(name = "status", nullable = false, length = 20)
+    private OrderStatus status;
 
     @Column(name = "total_amount", nullable = false)
     private Long totalAmount;
@@ -43,5 +47,6 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "payment_id", nullable = false)
+    @JsonManagedReference
     private Payment payment;
 }

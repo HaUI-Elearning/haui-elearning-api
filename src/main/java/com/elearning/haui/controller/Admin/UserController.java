@@ -12,10 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 
-import com.elearning.haui.entity.Course;
-import com.elearning.haui.entity.Role;
-import com.elearning.haui.entity.User;
-
+import com.elearning.haui.domain.entity.Course;
+import com.elearning.haui.domain.entity.Role;
+import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.service.RoleService;
 import com.elearning.haui.service.UserService;
 
@@ -94,7 +93,7 @@ public class UserController {
     }
 
     @GetMapping("/admin/user/delete/{id}")
-    public String deleteUser(Model model, @PathVariable long id) {
+    public String getDeleteUser(Model model, @PathVariable long id) {
         User delUser = new User();
         delUser.setUserId(id);
         model.addAttribute("delUser", delUser);
@@ -102,8 +101,8 @@ public class UserController {
     }
 
     @PostMapping("/admin/user/delete")
-    public String getMethodName(@ModelAttribute("delUser") User delUser) {
-        this.userService.removeById(delUser.getUserId());
+    public String postDeleteUser(@ModelAttribute("delUser") User delUser) {
+        this.userService.handleDeleteUser(delUser.getUserId());
         return "redirect:/admin/user";
     }
 

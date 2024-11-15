@@ -1,6 +1,6 @@
 package com.elearning.haui.service.validator;
 
-import com.elearning.haui.dto.RegisterDTO;
+import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.service.UserService;
 
 import jakarta.validation.ConstraintValidator;

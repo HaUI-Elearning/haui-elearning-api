@@ -1,6 +1,6 @@
 package com.elearning.haui.service;
 
-import com.elearning.haui.entity.Order;
+import com.elearning.haui.domain.entity.Order;
 import com.elearning.haui.repository.OrderRepository;
 
 import org.springframework.data.domain.Page;
@@ -30,6 +30,10 @@ public class OrderService {
     }
 
     public void handleSaveOrder(Order order) {
+        this.orderRepository.save(order);
+    }
+
+    public void updateOrder(Order order) {
         this.orderRepository.save(order);
     }
 }

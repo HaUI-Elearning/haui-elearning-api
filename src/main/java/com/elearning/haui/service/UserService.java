@@ -5,13 +5,16 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.elearning.haui.dto.RegisterDTO;
-import com.elearning.haui.entity.Course;
-import com.elearning.haui.entity.Enrollment;
-import com.elearning.haui.entity.Role;
-import com.elearning.haui.entity.User;
+import com.elearning.haui.domain.entity.Course;
+import com.elearning.haui.domain.entity.Enrollment;
+import com.elearning.haui.domain.entity.Role;
+import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.domain.dto.Meta;
+import com.elearning.haui.domain.dto.RegisterDTO;
+import com.elearning.haui.domain.dto.ResultPaginationDTO;
 import com.elearning.haui.repository.UserRepository;
 
 @Service
@@ -40,7 +43,7 @@ public class UserService {
         return this.userRepository.findById(id);
     }
 
-    public void removeById(long id) {
+    public void handleDeleteUser(long id) {
         this.userRepository.deleteById(id);
     }
 
@@ -87,5 +90,22 @@ public class UserService {
     // Đếm số lượng user
     public long countUsers() {
         return userRepository.count();
+    }
+
+    public ResultPaginationDTO fetchAllUser(Pageable pageable) {
+        Page<User> pageUser = this.userRepository.findAll(pageable);
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        Meta mt = new Meta();
+
+        mt.setPage(pageUser.getNumber() + 1);
+        mt.setPageSize(pageUser.getSize());
+
+        mt.setPages(pageUser.getTotalPages());
+        mt.setTotal(pageUser.getTotalElements());
+
+        rs.setMeta(mt);
+        rs.setResult(pageUser.getContent());
+
+        return rs;
     }
 }

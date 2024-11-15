@@ -1,4 +1,4 @@
-package com.elearning.haui.entity;
+package com.elearning.haui.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -48,10 +48,15 @@ public class Course {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     private List<Enrollment> enrollments;
 
     @OneToMany(mappedBy = "course")
     private List<Review> reviews;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
 
 }

@@ -1,4 +1,4 @@
-package com.elearning.haui.dto;
+package com.elearning.haui.domain.dto;
 
 import com.elearning.haui.service.validator.RegisterChecked;
 

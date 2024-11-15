@@ -1,7 +1,8 @@
-package com.elearning.haui.entity;
+package com.elearning.haui.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 @Setter
 @Getter
 @NoArgsConstructor

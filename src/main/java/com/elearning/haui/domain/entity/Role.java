@@ -1,4 +1,4 @@
-package com.elearning.haui.entity;
+package com.elearning.haui.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Getter
 @Setter
@@ -25,6 +27,7 @@ public class Role {
     private String description;
 
     @OneToMany(mappedBy = "role")
+    @JsonManagedReference // Đánh dấu phía quản lý của mối quan hệ
     private List<User> users;
 
 }

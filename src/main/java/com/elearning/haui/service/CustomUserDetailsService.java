@@ -21,7 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        com.elearning.haui.entity.User user = this.userService.getUserByUsername(username);
+        com.elearning.haui.domain.entity.User user = this.userService.getUserByUsername(username);
         if (user == null) {
             throw new UsernameNotFoundException("User not found");
         }

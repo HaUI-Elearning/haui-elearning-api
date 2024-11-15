@@ -1,7 +1,8 @@
 package com.elearning.haui.controller.Admin;
 
-import com.elearning.haui.entity.Course;
-import com.elearning.haui.entity.Order;
+import com.elearning.haui.domain.entity.Course;
+import com.elearning.haui.domain.entity.Order;
+import com.elearning.haui.enums.OrderStatus;
 import com.elearning.haui.service.OrderService;
 
 import org.springframework.data.domain.Page;
@@ -33,9 +34,9 @@ public class OrderController {
     }
 
     @GetMapping("/admin/order/{id}")
-    public String getOrderById(Model model, @PathVariable Long id) {
-        Order order = this.orderService.getOrderById(id);
-        model.addAttribute("course", order);
+    public String getOrderDetails(@PathVariable Long id, Model model) {
+        Order order = orderService.getOrderById(id);
+        model.addAttribute("order", order);
         return "/admin/order/detail";
     }
 
@@ -49,6 +50,20 @@ public class OrderController {
     @PostMapping("/admin/order/create")
     public String postCreateOrder(Model model, @ModelAttribute("newOrder") Order order) {
         this.orderService.handleSaveOrder(order);
+        return "redirect:/admin/order";
+    }
+
+    // Cập nhật trạng thái đơn hàng
+    @GetMapping("/admin/order/updateStatus/{orderId}")
+    public String updateOrderStatus(@PathVariable("orderId") Long orderId, @RequestParam("status") String status) {
+
+        OrderStatus orderStatus = OrderStatus.valueOf(status.toUpperCase());
+
+        Order order = orderService.getOrderById(orderId);
+        if (order != null) {
+            order.setStatus(orderStatus);
+            orderService.updateOrder(order);
+        }
         return "redirect:/admin/order";
     }
 

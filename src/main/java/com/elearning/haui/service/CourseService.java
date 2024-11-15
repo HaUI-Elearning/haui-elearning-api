@@ -1,8 +1,8 @@
 package com.elearning.haui.service;
 
-import com.elearning.haui.entity.Category;
-import com.elearning.haui.entity.Course;
-import com.elearning.haui.entity.CourseCategory;
+import com.elearning.haui.domain.entity.Category;
+import com.elearning.haui.domain.entity.Course;
+import com.elearning.haui.domain.entity.CourseCategory;
 import com.elearning.haui.repository.CategoryRepository;
 import com.elearning.haui.repository.CourseCategoryRepository;
 import com.elearning.haui.repository.CourseRepository;

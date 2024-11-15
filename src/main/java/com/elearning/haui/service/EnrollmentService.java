@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.elearning.haui.repository.EnrollmentRepository;
-import com.elearning.haui.entity.Enrollment;;
+import com.elearning.haui.domain.entity.Enrollment;
+import com.elearning.haui.repository.EnrollmentRepository;;
 
 @Service
 public class EnrollmentService {
@@ -15,8 +15,8 @@ public class EnrollmentService {
     this.enrollmentRepository = enrollmentRepository;
   }
 
-  public List<Enrollment> getEnrollmentByUserId(Long userId){
+  public List<Enrollment> getEnrollmentByUserId(Long userId) {
     return this.enrollmentRepository.findByUser_UserId(userId);
   }
-  
+
 }

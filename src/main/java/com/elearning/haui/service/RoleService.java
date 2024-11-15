@@ -1,6 +1,6 @@
 package com.elearning.haui.service;
 
-import com.elearning.haui.entity.Role;
+import com.elearning.haui.domain.entity.Role;
 import com.elearning.haui.repository.RoleRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;

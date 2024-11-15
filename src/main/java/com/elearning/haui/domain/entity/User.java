@@ -1,4 +1,4 @@
-package com.elearning.haui.entity;
+package com.elearning.haui.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Setter
 @Getter
@@ -37,6 +39,7 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "role_id")
+    @JsonBackReference
     private Role role;
 
     @Column(nullable = false)

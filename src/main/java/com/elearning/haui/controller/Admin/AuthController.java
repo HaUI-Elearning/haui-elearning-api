@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import com.elearning.haui.dto.RegisterDTO;
-import com.elearning.haui.entity.User;
+import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.service.UserService;
 
 import jakarta.validation.Valid;

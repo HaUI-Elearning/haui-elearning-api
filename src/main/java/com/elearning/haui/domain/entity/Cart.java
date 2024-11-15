@@ -1,4 +1,4 @@
-package com.elearning.haui.entity;
+package com.elearning.haui.domain.entity;
 
 import java.time.LocalDateTime;
 
