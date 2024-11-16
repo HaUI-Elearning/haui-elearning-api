@@ -3,7 +3,6 @@ package com.elearning.haui.service;
 import com.elearning.haui.domain.entity.Role;
 import com.elearning.haui.repository.RoleRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,7 +10,6 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
 
-    @Autowired
     public RoleService(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
     }

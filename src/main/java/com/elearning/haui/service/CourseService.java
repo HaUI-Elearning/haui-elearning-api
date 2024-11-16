@@ -1,11 +1,13 @@
 package com.elearning.haui.service;
 
+import com.elearning.haui.domain.dto.CourseSalesDTO;
 import com.elearning.haui.domain.entity.Category;
 import com.elearning.haui.domain.entity.Course;
-import com.elearning.haui.domain.entity.CourseCategory;
 import com.elearning.haui.repository.CategoryRepository;
 import com.elearning.haui.repository.CourseCategoryRepository;
 import com.elearning.haui.repository.CourseRepository;
+import com.elearning.haui.repository.OrderDetailRepository;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -13,19 +15,20 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.PrimitiveIterator;
 
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
     private final CourseCategoryRepository courseCategoryRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
     public CourseService(CourseRepository courseRepository, CategoryRepository categoryRepository,
-            CourseCategoryRepository courseCategoryRepository) {
+            CourseCategoryRepository courseCategoryRepository, OrderDetailRepository orderDetailRepository) {
         this.courseRepository = courseRepository;
         this.categoryRepository = categoryRepository;
         this.courseCategoryRepository = courseCategoryRepository;
+        this.orderDetailRepository = orderDetailRepository;
     }
 
     public void handleSaveProduct(Course course) {
@@ -69,5 +72,10 @@ public class CourseService {
 
         // Trả về Map chứa thông tin số lượng khóa học theo thể loại
         return categoryCountMap;
+    }
+
+    // Lấy danh sách khóa học bán nhiều nhất
+    public List<CourseSalesDTO> getTopSellingCourses() {
+        return orderDetailRepository.findTopSellingCourses();
     }
 }

@@ -286,9 +286,7 @@
                                                             <td>
                                                                 <a href="/admin/order/${order.orderId}"
                                                                     class="btn btn-success btn-sm">View</a>
-                                                                <a href="/admin/product/update/${order.orderId}"
-                                                                    class="btn btn-warning btn-sm">Update</a>
-                                                                <a href="/admin/product/delete/${order.orderId}"
+                                                                <a href="/admin/order/delete/${order.orderId}"
                                                                     class="btn btn-danger btn-sm">Delete</a>
                                                             </td>
                                                         </tr>

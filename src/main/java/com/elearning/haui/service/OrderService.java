@@ -1,6 +1,8 @@
 package com.elearning.haui.service;
 
 import com.elearning.haui.domain.entity.Order;
+import com.elearning.haui.domain.entity.OrderDetail;
+import com.elearning.haui.repository.OrderDetailRepository;
 import com.elearning.haui.repository.OrderRepository;
 
 import org.springframework.data.domain.Page;
@@ -12,9 +14,11 @@ import java.util.List;
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, OrderDetailRepository orderDetailRepository) {
         this.orderRepository = orderRepository;
+        this.orderDetailRepository = orderDetailRepository;
     }
 
     public Page<Order> findPaginated(PageRequest pageRequest) {
@@ -36,4 +40,9 @@ public class OrderService {
     public void updateOrder(Order order) {
         this.orderRepository.save(order);
     }
+
+    public void deleteOrderById(Long id) {
+        this.orderRepository.deleteById(id);
+    }
+
 }

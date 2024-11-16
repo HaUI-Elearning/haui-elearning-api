@@ -2,16 +2,17 @@ package com.elearning.haui.controller.Admin;
 
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.Order;
+import com.elearning.haui.domain.entity.OrderDetail;
 import com.elearning.haui.enums.OrderStatus;
 import com.elearning.haui.service.OrderService;
+
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Controller
 public class OrderController {
@@ -36,7 +37,9 @@ public class OrderController {
     @GetMapping("/admin/order/{id}")
     public String getOrderDetails(@PathVariable Long id, Model model) {
         Order order = orderService.getOrderById(id);
+        List<OrderDetail> orderDetails = order.getOrderDetails();
         model.addAttribute("order", order);
+        model.addAttribute("orderDetails", orderDetails);
         return "/admin/order/detail";
     }
 
@@ -50,6 +53,20 @@ public class OrderController {
     @PostMapping("/admin/order/create")
     public String postCreateOrder(Model model, @ModelAttribute("newOrder") Order order) {
         this.orderService.handleSaveOrder(order);
+        return "redirect:/admin/order";
+    }
+
+    // Delete
+    @GetMapping("/admin/order/delete/{id}")
+    public String getDeleteProduct(Model model, @PathVariable long id) {
+        model.addAttribute("id", id);
+        model.addAttribute("deleteOrder", new Order());
+        return "admin/order/delete";
+    }
+
+    @PostMapping("/admin/order/delete")
+    public String postDeleteProduct(@ModelAttribute("deleteOrder") Order order) {
+        this.orderService.deleteOrderById(order.getOrderId());
         return "redirect:/admin/order";
     }
 

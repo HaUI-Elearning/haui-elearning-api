@@ -8,16 +8,16 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "paymentdetails")
-public class PaymentDetail {
+@Table(name = "orderdetails")
+public class OrderDetail {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long paymentDetailId;
+    private long orderDetailId;
 
     @ManyToOne
-    @JoinColumn(name = "payment_id", nullable = false)
-    private Payment payment;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
@@ -26,5 +26,4 @@ public class PaymentDetail {
     private int quantity;
 
     private Double price;
-
 }

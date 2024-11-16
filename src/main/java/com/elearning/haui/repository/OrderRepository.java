@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.elearning.haui.domain.entity.Order;
+import com.elearning.haui.enums.OrderStatus;
 
 import java.util.List;
 
@@ -18,4 +19,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT SUM(o.totalAmount) FROM Order o")
     double getTotalRevenue();
+
+    // Đếm số lượng đơn theo trạng thái
+    long countByStatus(OrderStatus status);
 }

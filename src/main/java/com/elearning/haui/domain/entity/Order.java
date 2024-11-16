@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import com.elearning.haui.enums.OrderStatus;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Getter
 @Setter
@@ -45,8 +45,12 @@ public class Order {
     @Column(name = "updated_at")
     private Timestamp updatedAt;
 
-    @ManyToOne
+    // Quan hệ 1-1 với Payment: Mỗi Order có một Payment duy nhất
+    @OneToOne
     @JoinColumn(name = "payment_id", nullable = false)
-    @JsonManagedReference
     private Payment payment;
+
+    // Quan hệ 1-n với OrderDetail: Mỗi Order có nhiều OrderDetail
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<OrderDetail> orderDetails; // Sửa ở đây để lấy danh sách OrderDetai
 }
