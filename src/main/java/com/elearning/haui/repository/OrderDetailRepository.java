@@ -21,6 +21,8 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
             "FROM OrderDetail od " +
             "JOIN CourseCategory cc ON cc.course.courseId = od.course.courseId " + // Kết nối với CourseCategory
             "JOIN Category cat ON cat.categoryId = cc.category.categoryId " + // Liên kết với bảng Category
+            "JOIN od.order o " +
+            "WHERE o.status = 'completed' " + // Thêm điều kiện status
             "GROUP BY od.course.courseId, od.course.name, cc.category.name, od.course.price, od.course.author " +
             "ORDER BY SUM(od.quantity) DESC")
     List<CourseSalesDTO> findTopSellingCourses();

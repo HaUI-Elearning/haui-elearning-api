@@ -17,7 +17,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Order save(Order order);
 
-    @Query("SELECT SUM(o.totalAmount) FROM Order o")
+    @Query("SELECT SUM(o.totalAmount) FROM Order o WHERE o.status = 'completed'")
     double getTotalRevenue();
 
     // Đếm số lượng đơn theo trạng thái
