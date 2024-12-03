@@ -108,4 +108,12 @@ public class UserService {
 
         return rs;
     }
+
+    public boolean isUsernameOrEmailExist(String username, String email, Long userId) {
+        if (userId == null) {
+            return userRepository.existsByUsernameOrEmail(username, email);
+        } else {
+            return userRepository.existsByUsernameOrEmailAndUserIdNot(username, email, userId);
+        }
+    }
 }

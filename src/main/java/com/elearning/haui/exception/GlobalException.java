@@ -18,9 +18,11 @@ import com.elearning.haui.domain.response.RestResponse;
 @RestControllerAdvice
 public class GlobalException {
     @ExceptionHandler(value = {
+            Exception.class,
             UsernameNotFoundException.class,
             BadCredentialsException.class,
             IdInvalidException.class,
+            RuntimeException.class,
     })
     public ResponseEntity<RestResponse<Object>> handleIdException(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();
@@ -44,4 +46,5 @@ public class GlobalException {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
+
 }

@@ -55,6 +55,12 @@ public class UserController {
             @ModelAttribute("newUser") User newUser,
             @RequestParam("role.name") String roleName) {
 
+        boolean isDuplicate = userService.isUsernameOrEmailExist(newUser.getUsername(), newUser.getEmail(), null);
+        if (isDuplicate) {
+            model.addAttribute("error", "Username or email already exists.");
+            return "/admin/user/create";
+        }
+
         Role role = roleService.findByName(roleName);
         newUser.setRole(role);
         newUser.setPassword(this.passwordEncoder.encode(newUser.getPassword()));

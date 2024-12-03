@@ -232,6 +232,14 @@
                                     <div class="col-md-8 col-lg-6 mx-auto">
                                         <div class="form-container">
                                             <h3 class="mb-4">Create a User</h3>
+
+                                            <!-- Alert Section -->
+                                            <c:if test="${not empty error}">
+                                                <div class="alert alert-danger" role="alert">
+                                                    ${error}
+                                                </div>
+                                            </c:if>
+
                                             <form:form method="post" enctype="multipart/form-data"
                                                 action="/admin/user/create" modelAttribute="newUser" class="row g-3">
                                                 <div class="col-md-6">

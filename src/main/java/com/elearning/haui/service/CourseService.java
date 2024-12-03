@@ -1,5 +1,6 @@
 package com.elearning.haui.service;
 
+import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.dto.CourseSalesDTO;
 import com.elearning.haui.domain.entity.Category;
 import com.elearning.haui.domain.entity.Course;
@@ -12,9 +13,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
@@ -78,4 +81,42 @@ public class CourseService {
     public List<CourseSalesDTO> getTopSellingCourses() {
         return orderDetailRepository.findTopSellingCourses();
     }
+
+    public List<CourseDTO> getCoursesByCategory(Long categoryId) {
+        // Lấy tối đa 10 khóa học từ database
+        List<Course> limitedCourses = courseRepository.findLimitedCoursesByCategory(categoryId);
+
+        // Shuffle và chọn ngẫu nhiên `limit` khóa học
+        Collections.shuffle(limitedCourses);
+        List<Course> randomCourses = limitedCourses.stream()
+                .limit(10)
+                .collect(Collectors.toList());
+
+        // Ánh xạ sang CourseDTO
+        return randomCourses.stream()
+                .map(course -> new CourseDTO(course.getCourseId(), course.getName(), course.getThumbnail(),
+                        course.getDescription(), course.getContents(), course.getStar(), course.getHour(),
+                        course.getPrice(), course.getAuthor()))
+                .collect(Collectors.toList());
+    }
+
+    // Xem chi tiết một khoá học ở phía clients
+    public CourseDTO getCourseDetail(Long courseId) {
+        // Tìm khóa học theo ID
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+
+        // Ánh xạ sang DTO
+        return new CourseDTO(
+                course.getCourseId(),
+                course.getName(),
+                course.getThumbnail(),
+                course.getDescription(),
+                course.getContents(),
+                course.getStar(),
+                course.getHour(),
+                course.getPrice(),
+                course.getAuthor());
+    }
+
 }
