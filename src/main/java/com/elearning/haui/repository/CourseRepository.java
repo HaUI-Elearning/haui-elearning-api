@@ -23,8 +23,25 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "FROM courses c " +
             "JOIN coursecategories cc ON c.course_id = cc.course_id " +
             "WHERE cc.category_id = :categoryId " +
-            "ORDER BY RAND() " +
-            "LIMIT 10", nativeQuery = true)
-    List<Course> findLimitedCoursesByCategory(@Param("categoryId") Long categoryId);
+            "ORDER BY RAND() ", nativeQuery = true)
+    List<Course> findCoursesByCategory(@Param("categoryId") Long categoryId);
+
+    // Lọc khoá học
+    // Lọc khóa học theo hour
+    List<Course> findByHour(int hour);
+
+    // Lọc khóa học theo giá (từ minPrice đến maxPrice)
+    List<Course> findByPriceBetween(double minPrice, double maxPrice);
+
+    // Lọc khóa học theo star (3 lựa chọn: >= 3, >= 4, 5)
+    List<Course> findByStarGreaterThanEqual(float star);
+
+    // Lọc khóa học theo thuộc tính paid/free (Giả sử "paid" là khóa học có giá,
+    // "free" là khóa học miễn phí)
+    @Query("SELECT c FROM Course c WHERE c.price = 0")
+    List<Course> findFreeCourses();
+
+    @Query("SELECT c FROM Course c WHERE c.price > 0")
+    List<Course> findPaidCourses();
 
 }

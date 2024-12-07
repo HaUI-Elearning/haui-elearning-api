@@ -94,6 +94,14 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.cors() // Bật CORS
+                .and().csrf().disable(); // Tắt CSRF nếu cần
+
+        return http.build();
+    }
+
+    @Bean
     public HttpFirewall allowUrlWithDoubleSlash() {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         firewall.setAllowUrlEncodedDoubleSlash(true); // Cho phép gạch chéo kép

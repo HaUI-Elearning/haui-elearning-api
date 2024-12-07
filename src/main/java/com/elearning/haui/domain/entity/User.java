@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -36,6 +37,9 @@ public class User {
 
     @Column(columnDefinition = "TEXT")
     private String introduce;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<FavoriteCourse> favoriteCourses;
 
     @ManyToOne
     @JoinColumn(name = "role_id")

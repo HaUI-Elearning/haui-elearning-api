@@ -9,6 +9,9 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,11 +30,14 @@ public class Course {
     @Column
     private String thumbnail;
 
-    @Column
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
 
-    @Column
+    @Column(columnDefinition = "LONGTEXT")
     private String contents;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String chapters;
 
     @Column(nullable = false)
     private float star;
@@ -46,13 +52,19 @@ public class Course {
     private String author;
 
     @Column(name = "created_at", nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<Enrollment> enrollments;
 
     @OneToMany(mappedBy = "course")
     private List<Review> reviews;
+
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<FavoriteCourse> favoriteUsers;
 
     @PrePersist
     protected void onCreate() {

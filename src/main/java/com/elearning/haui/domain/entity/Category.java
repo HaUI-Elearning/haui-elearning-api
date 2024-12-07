@@ -27,6 +27,9 @@ public class Category {
     @Column(nullable = false, unique = true, length = 50)
     private String name;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String description;
+
     @OneToMany(mappedBy = "category")
     private List<CourseCategory> courseCategories;
 }
