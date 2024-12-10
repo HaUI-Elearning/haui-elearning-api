@@ -46,6 +46,8 @@ public class User {
     @JsonBackReference
     private Role role;
 
+    private String refreshToken;
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
