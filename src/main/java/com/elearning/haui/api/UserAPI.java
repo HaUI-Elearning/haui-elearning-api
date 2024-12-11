@@ -4,6 +4,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
+import com.elearning.haui.domain.dto.UserDetailsDTO;
 import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.domain.request.UpdateUserProfileRequest;
 import com.elearning.haui.domain.response.RestResponse;
 import com.elearning.haui.exception.IdInvalidException;
 import com.elearning.haui.service.RoleService;
+import com.elearning.haui.service.UserDetailsService;
 import com.elearning.haui.service.UserService;
 
 import org.springframework.web.bind.annotation.PutMapping;
@@ -38,7 +43,7 @@ public class UserAPI {
         this.roleService = roleService;
     }
 
-    @PostMapping("/users")
+    @PostMapping("/register")
     public ResponseEntity<RestResponse<User>> register(@RequestBody RegisterDTO registerDTO) throws Exception {
         if (userService.checkEmailExist(registerDTO.getEmail())) {
             throw new Exception("Email already exists.");
@@ -97,11 +102,36 @@ public class UserAPI {
                         fetchUser));
     }
 
-    // Cập nhập người dùng
-    @PutMapping("/users/{id}")
-    public String updateUserById(@PathVariable String id, @RequestBody String entity) {
+    // lấy thông tin của người dùng
+    @GetMapping("/users/my-profile")
+    public ResponseEntity<UserDetailsDTO> getUser() throws Exception {
+        // Lấy thông tin người dùng từ SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        return entity;
+        String username = authentication.getName(); // Lấy username từ JWT
+
+        User user = userService.getUserByUsername(username);
+
+        if (user == null) {
+            new Exception("User not found");
+        }
+
+        return ResponseEntity.ok().body(userService.mapToUserDetailsDTO(user));
+
+    }
+
+    // Cập nhập người dùng
+    @PutMapping("/users/update-profile")
+    public ResponseEntity<UserDetailsDTO> updateUserProfile(@RequestBody UpdateUserProfileRequest request) {
+        // Lấy thông tin người dùng từ SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName(); // Lấy username từ JWT
+
+        // Cập nhật thông tin người dùng
+        User updatedUser = userService.updateUserProfile(username, request);
+
+        // Trả về thông tin đã cập nhật dưới dạng UserDetailsDTO
+        return ResponseEntity.ok().body(userService.mapToUserDetailsDTO(updatedUser));
     }
 
     // Xoá người dùng theo id

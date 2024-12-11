@@ -85,7 +85,9 @@ public class SecurityConfiguration {
                 .securityMatcher("/api/v1/**") // Áp dụng cho các URL /api/v1/**
                 .csrf(csrf -> csrf.disable()) // CSRF không cần thiết cho API
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/v1/login", "/api/v1/courses/**", "/api/v1/categories/**").permitAll()
+                        .requestMatchers("/api/v1/login", "/api/v1/register", "/api/v1/courses/**",
+                                "/api/v1/categories/**")
+                        .permitAll()
                         .anyRequest().authenticated()) // Cần xác thực cho các URL khác trong /api/v1/**
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())

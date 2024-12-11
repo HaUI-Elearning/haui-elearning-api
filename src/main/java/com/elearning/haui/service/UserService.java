@@ -2,6 +2,7 @@ package com.elearning.haui.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -10,11 +11,15 @@ import org.springframework.stereotype.Service;
 
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.Enrollment;
+import com.elearning.haui.domain.entity.FavoriteCourse;
 import com.elearning.haui.domain.entity.Role;
 import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.domain.request.UpdateUserProfileRequest;
+import com.elearning.haui.domain.dto.FavoriteCourseDTO;
 import com.elearning.haui.domain.dto.Meta;
 import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
+import com.elearning.haui.domain.dto.UserDetailsDTO;
 import com.elearning.haui.repository.UserRepository;
 
 @Service
@@ -115,5 +120,51 @@ public class UserService {
         } else {
             return userRepository.existsByUsernameOrEmailAndUserIdNot(username, email, userId);
         }
+    }
+
+    public UserDetailsDTO mapToUserDetailsDTO(User user) {
+        UserDetailsDTO userDetailsDTO = new UserDetailsDTO();
+        userDetailsDTO.setUserId(user.getUserId());
+        userDetailsDTO.setUsername(user.getUsername());
+        userDetailsDTO.setEmail(user.getEmail());
+        userDetailsDTO.setName(user.getName());
+        userDetailsDTO.setIntroduce(user.getIntroduce());
+        userDetailsDTO.setCreatedAt(user.getCreatedAt());
+
+        userDetailsDTO.setFavoriteCourses(
+                user.getFavoriteCourses().stream()
+                        .map(this::mapToFavoriteCourseDTO)
+                        .collect(Collectors.toList()));
+
+        return userDetailsDTO;
+    }
+
+    private FavoriteCourseDTO mapToFavoriteCourseDTO(FavoriteCourse favoriteCourse) {
+        FavoriteCourseDTO favoriteCourseDTO = new FavoriteCourseDTO();
+        favoriteCourseDTO.setId(favoriteCourse.getId());
+        favoriteCourseDTO.setAddedAt(favoriteCourse.getAddedAt());
+        return favoriteCourseDTO;
+    }
+
+    public User updateUserProfile(String username, UpdateUserProfileRequest updateUserProfileRequest) {
+        // Tìm user từ username
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("User not found for username: " + username);
+        }
+
+        // Cập nhật nếu trường không null
+        if (updateUserProfileRequest.getName() != null && !updateUserProfileRequest.getName().isBlank()) {
+            user.setName(updateUserProfileRequest.getName());
+        }
+
+        if (updateUserProfileRequest.getIntroduce() != null && !updateUserProfileRequest.getIntroduce().isBlank()) {
+            user.setIntroduce(updateUserProfileRequest.getIntroduce());
+        }
+
+        // Lưu thông tin đã cập nhật
+        userRepository.save(user);
+
+        return user;
     }
 }

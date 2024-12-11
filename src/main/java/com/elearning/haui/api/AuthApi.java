@@ -10,18 +10,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.elearning.haui.domain.dto.LoginDTO;
-import com.elearning.haui.domain.dto.ResLoginDTO;
+import com.elearning.haui.domain.response.ResLoginDTO;
 import com.elearning.haui.utils.SecurityUtil;
 
 import jakarta.validation.Valid;
 
 @RestController
-public class AuthApi {
+public class AuthAPI {
     private final SecurityUtil securityUtil;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    public AuthApi(SecurityUtil securityUtil, AuthenticationManagerBuilder authenticationManagerBuilder) {
+    public AuthAPI(SecurityUtil securityUtil, AuthenticationManagerBuilder authenticationManagerBuilder) {
         this.securityUtil = securityUtil;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
     }
