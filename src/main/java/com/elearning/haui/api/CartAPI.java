@@ -33,9 +33,7 @@ public class CartAPI {
 
         String username = authentication.getName(); // Lấy username từ JWT
 
-        cartService.addCourseToCart(username, request.getCourseId(), request.getQuantity());
-        return ResponseEntity.ok(null);
-
+        return ResponseEntity.ok(cartService.addCourseToCart(username, request.getCourseId(), request.getQuantity()));
     }
 
     @GetMapping("")
@@ -52,7 +50,7 @@ public class CartAPI {
     }
 
     @DeleteMapping("")
-    public ResponseEntity<?> deleteCourseInCart(@RequestParam Long courseId)
+    public ResponseEntity<CartDTO> deleteCourseInCart(@RequestParam Long courseId)
             throws Exception {
 
         // Lấy thông tin người dùng từ SecurityContext
@@ -63,7 +61,7 @@ public class CartAPI {
         if (!cartService.deleteCourseInCart(username, courseId)) {
             new Exception("Failed to delete course in cart for user");
         }
-        return ResponseEntity.ok().body(null);
 
+        return ResponseEntity.ok().body(cartService.getCartDetails(username));
     }
 }

@@ -1,6 +1,7 @@
 package com.elearning.haui.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.elearning.haui.domain.dto.CartDTO;
 import com.elearning.haui.domain.dto.CartDetailDTO;
+import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.entity.Cart;
 import com.elearning.haui.domain.entity.CartDetail;
 import com.elearning.haui.domain.entity.Course;
@@ -35,13 +37,11 @@ public class CartService {
         this.userRepository = userRepository;
     }
 
-    public void addCourseToCart(String username, Long courseId, int quantity) {
+    public CourseDTO addCourseToCart(String username, Long courseId, int quantity) {
         // Lấy user từ username
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            // Xử lý khi không tìm thấy user
-            new RuntimeException("User not found for username: " + username);
-            return; // Hoặc tùy chọn khác: throw ngoại lệ tùy chỉnh, trả về lỗi
+            throw new RuntimeException("User not found for username: " + username);
         }
 
         // Kiểm tra khóa học
@@ -49,36 +49,52 @@ public class CartService {
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
         // Kiểm tra giỏ hàng
-        Cart cart = cartRepository.findByUser(user)
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setUser(user);
-                    newCart.setCreatedAt(LocalDateTime.now());
-                    newCart.setQuantity(0);
-                    newCart.setTotalPrice(0.0);
-                    return cartRepository.save(newCart);
-                });
+        Cart cart = cartRepository.findByUser(user).orElse(null);
+
+        if (cart == null) {
+            // Tạo giỏ hàng mới nếu chưa có
+            cart = new Cart(user);
+            cart.setQuantity(0);
+            cart.setTotalPrice(0.0);
+            cartRepository.save(cart); // Lưu giỏ hàng mới vào cơ sở dữ liệu
+        }
+
+        // Khởi tạo danh sách nếu chưa có (không cần thiết nếu đã khởi tạo trong lớp
+        // Cart)
+        if (cart.getCartDetails() == null) {
+            cart.setCartDetails(new ArrayList<>());
+        }
 
         // Kiểm tra chi tiết giỏ hàng (CartDetail)
         CartDetail cartDetail = cartDetailRepository.findByCartAndCourse(cart, course).orElse(null);
 
         if (cartDetail != null) {
-            // Nếu khóa học đã tồn tại trong giỏ hàng, bỏ qua
-            new Exception("Course already exists in the cart. Skipping addition.");
+            throw new RuntimeException("Course already exists in the cart. Skipping addition.");
         } else {
-            // Tạo chi tiết giỏ hàng mới nếu chưa tồn tại
             CartDetail newCartDetail = new CartDetail();
             newCartDetail.setCart(cart);
             newCartDetail.setCourse(course);
-            newCartDetail.setQuantity(1); // Mặc định số lượng là 1
+            newCartDetail.setQuantity(quantity); // Cập nhật theo số lượng mong muốn
             newCartDetail.setPrice(course.getPrice()); // Lưu giá của khóa học
 
-            // Lưu thông tin chi tiết giỏ hàng
             cartDetailRepository.save(newCartDetail);
         }
 
         // Cập nhật lại tổng số lượng và tổng giá trị của Cart
         updateCart(cart);
+
+        return new CourseDTO(
+                course.getCourseId(),
+                course.getName(),
+                course.getThumbnail(),
+                course.getDescription(),
+                course.getContents(),
+                course.getStar(),
+                course.getHour(),
+                course.getPrice(),
+                course.getAuthor(),
+                course.getChapters(),
+                course.getCreatedAt());
     }
 
     public CartDTO getCartDetails(String username) {
@@ -86,21 +102,25 @@ public class CartService {
         User user = userRepository.findByUsername(username);
 
         if (user == null) {
-            new RuntimeException("User not found");
+            throw new RuntimeException("User not found");
         }
 
         // Lấy giỏ hàng của người dùng
-        Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+        Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Cart not found"));
+
+        // Kiểm tra nếu giỏ hàng chưa có cartDetails, khởi tạo danh sách rỗng
+        if (cart.getCartDetails() == null) {
+            cart.setCartDetails(new ArrayList<>());
+        }
 
         // Lấy danh sách các CartDetail liên quan đến Cart
         List<CartDetailDTO> cartDetails = cart.getCartDetails().stream()
-                .map(cartDetail -> new CartDetailDTO(
-                        cartDetail.getCourse().getCourseId(),
-                        cartDetail.getCourse().getName(),
-                        cartDetail.getCourse().getThumbnail(),
-                        cartDetail.getQuantity(),
-                        cartDetail.getPrice()))
+                .map(cd -> new CartDetailDTO(
+                        cd.getCourse().getCourseId(),
+                        cd.getCourse().getName(),
+                        cd.getCourse().getThumbnail(),
+                        cd.getQuantity(),
+                        cd.getPrice()))
                 .collect(Collectors.toList());
 
         // Trả về DTO chứa thông tin giỏ hàng và chi tiết giỏ hàng

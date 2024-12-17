@@ -3,6 +3,7 @@ package com.elearning.haui.domain.entity;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
@@ -34,6 +35,7 @@ public class FavoriteCourse {
     private Course course;
 
     @Column(name = "added_at", nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime addedAt = LocalDateTime.now();
 
     @PrePersist
@@ -41,5 +43,10 @@ public class FavoriteCourse {
         if (this.addedAt == null) {
             this.addedAt = LocalDateTime.now();
         }
+    }
+
+    public FavoriteCourse(User user, Course course) {
+        this.user = user;
+        this.course = course;
     }
 }

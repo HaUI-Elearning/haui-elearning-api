@@ -15,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @AllArgsConstructor
 public class FavoriteCourseDTO {
     private Long id;
-    private Long userId;
     private Long courseId;
     private String courseName;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
