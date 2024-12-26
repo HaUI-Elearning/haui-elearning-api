@@ -6,15 +6,21 @@ import org.springframework.ui.Model;
 
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.service.CourseService;
+import com.elearning.haui.utils.UploadCloudinary;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class CourseController {
     private final CourseService courseService;
+    private final UploadCloudinary uploadCloudinary;
 
-    public CourseController(CourseService courseService) {
+    public CourseController(CourseService courseService, UploadCloudinary uploadCloudinary) {
         this.courseService = courseService;
+        this.uploadCloudinary = uploadCloudinary;
     }
 
     @GetMapping("/admin/product")
@@ -42,9 +48,23 @@ public class CourseController {
     }
 
     @PostMapping("/admin/product/create")
-    public String postCreateProduct(Model model, @ModelAttribute("newProduct") Course course) {
-        this.courseService.handleSaveProduct(course);
-        return "redirect:/admin/product";
+    public String postCreateProduct(Model model, @ModelAttribute("newProduct") Course course,
+            @RequestParam("imageFile") MultipartFile imageFile,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            // Xử lý tải lên ảnh
+            String imageUrl = uploadCloudinary.uploadImage(imageFile);
+            course.setThumbnail(imageUrl);
+
+            this.courseService.handleSaveProduct(course);
+
+            redirectAttributes.addFlashAttribute("message", "Product created successfully.");
+            return "redirect:/admin/product";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", "Failed to create product.");
+            return "redirect:/admin/product/create";
+        }
     }
 
     // Delete

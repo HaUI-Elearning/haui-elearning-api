@@ -39,7 +39,7 @@ public class Course {
     @Column(columnDefinition = "LONGTEXT")
     private String chapters;
 
-    @Column(nullable = false)
+    @Column
     private float star;
 
     @Column(nullable = false)
