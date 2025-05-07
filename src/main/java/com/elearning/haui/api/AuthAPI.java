@@ -16,12 +16,12 @@ import com.elearning.haui.utils.SecurityUtil;
 import jakarta.validation.Valid;
 
 @RestController
-public class AuthApi {
+public class AuthAPI {
     private final SecurityUtil securityUtil;
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    public AuthApi(SecurityUtil securityUtil, AuthenticationManagerBuilder authenticationManagerBuilder) {
+    public AuthAPI(SecurityUtil securityUtil, AuthenticationManagerBuilder authenticationManagerBuilder) {
         this.securityUtil = securityUtil;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
     }
