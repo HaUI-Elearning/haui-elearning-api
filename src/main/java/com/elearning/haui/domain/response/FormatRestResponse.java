@@ -4,11 +4,8 @@ import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 @ControllerAdvice
 public class FormatRestResponse implements ResponseBodyAdvice<Object> {
@@ -27,24 +24,27 @@ public class FormatRestResponse implements ResponseBodyAdvice<Object> {
             ServerHttpRequest request,
             ServerHttpResponse response) {
 
-        HttpServletResponse servletResponse = ((ServletServerHttpResponse) response).getServletResponse();
-        int status = servletResponse.getStatus();
-
-        if (body instanceof RestResponse) {
+        // Không wrap các loại raw như byte[] hay String
+        if (body instanceof RestResponse || body instanceof byte[] || body instanceof String) {
             return body;
         }
 
-        RestResponse<Object> res = new RestResponse<Object>();
+        // Lấy status code an toàn (mặc định 200)
+        int status = 200;
+        if (response instanceof org.springframework.http.server.ServletServerHttpResponse servletResponse) {
+            status = servletResponse.getServletResponse().getStatus();
+        }
+
+        RestResponse<Object> res = new RestResponse<>();
         res.setStatusCode(status);
 
         if (status >= 400) {
+            // Với lỗi, giữ nguyên body (để exception handler xử lý)
             return body;
         } else {
             res.setData(body);
             res.setMessage("CALL API SUCCESS");
+            return res;
         }
-
-        return res;
     }
-
 }

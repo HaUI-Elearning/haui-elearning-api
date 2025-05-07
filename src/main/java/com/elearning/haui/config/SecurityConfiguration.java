@@ -85,10 +85,22 @@ public class SecurityConfiguration {
                 .securityMatcher("/api/v1/**") // Áp dụng cho các URL /api/v1/**
                 .csrf(csrf -> csrf.disable()) // CSRF không cần thiết cho API
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/v1/login", "/api/v1/register", "/api/v1/courses/**",
-                                "/api/v1/categories/**")
-                        .permitAll()
-                        .anyRequest().authenticated()) // Cần xác thực cho các URL khác trong /api/v1/**
+                        // Cho phép Swagger UI truy cập public
+                        .requestMatchers(
+                                "/api/v1/login",
+                                "/api/v1/register",
+                                "/api/v1/courses/**",
+                                "/api/v1/categories/**",
+
+                                // Swagger OpenAPI
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**",
+                                "/configuration/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint)) // Xử lý lỗi xác thực JWT
@@ -105,8 +117,17 @@ public class SecurityConfiguration {
         http
                 .authorizeHttpRequests(authz -> authz
                         .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE).permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**",
+                                "/configuration/**",
+                                "/webjars/**"
+                        ).permitAll()
                         .requestMatchers("/", "/login", "/client/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN"))
+
                 // Cấu hình session cho admin
                 .sessionManagement(sessionManagement -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.ALWAYS) // Session management for /admin/**
@@ -157,14 +178,6 @@ public class SecurityConfiguration {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
-    }
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors() // Bật CORS
-                .and().csrf().disable(); // Tắt CSRF nếu cần
-
-        return http.build();
     }
 
     @Bean
