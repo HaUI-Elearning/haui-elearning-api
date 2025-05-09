@@ -23,6 +23,7 @@ public class GlobalException {
             BadCredentialsException.class,
             IdInvalidException.class,
             RuntimeException.class,
+            IllegalArgumentException.class 
     })
     public ResponseEntity<RestResponse<Object>> handleIdException(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();

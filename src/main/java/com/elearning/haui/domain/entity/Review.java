@@ -29,7 +29,7 @@ public class Review {
     private User user;
 
     @Column(nullable = false)
-    private int rating;
+    private double rating;
 
     @Column
     private String comment;

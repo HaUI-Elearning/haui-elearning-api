@@ -4,23 +4,32 @@ import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.dto.CourseSalesDTO;
 import com.elearning.haui.domain.dto.Meta;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
+import com.elearning.haui.domain.dto.ReviewDTO;
 import com.elearning.haui.domain.entity.Category;
 import com.elearning.haui.domain.entity.Course;
+import com.elearning.haui.domain.entity.Review;
+import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.repository.CategoryRepository;
 import com.elearning.haui.repository.CourseCategoryRepository;
 import com.elearning.haui.repository.CourseRepository;
 import com.elearning.haui.repository.OrderDetailRepository;
+import com.elearning.haui.repository.ReviewRepository;
+import com.elearning.haui.repository.UserRepository;
 import com.elearning.haui.utils.PaginationUtils;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -233,5 +242,5 @@ public class CourseService {
                     .toList();
         }
     }
-
+   
 }

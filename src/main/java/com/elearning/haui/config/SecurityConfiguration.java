@@ -91,7 +91,7 @@ public class SecurityConfiguration {
                                 "/api/v1/register",
                                 "/api/v1/courses/**",
                                 "/api/v1/categories/**",
-
+                                "/api/v1/Review/getAll/**",
                                 // Swagger OpenAPI
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
