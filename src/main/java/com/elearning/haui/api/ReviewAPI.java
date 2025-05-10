@@ -60,4 +60,18 @@ public class ReviewAPI {
         String rs=reviewService.deleteReviewByUser(authentication.getName(),ReviewID);
         return ResponseEntity.ok(rs);
     }
+
+    //filter review for course
+    @GetMapping("/filter/{courseID}")
+    public ResponseEntity<?> FilterReview(
+        @PathVariable ("courseID") Long courseID
+       ,@RequestParam int Stars
+        )
+    {
+        if(Stars <1 || Stars>5){
+            throw new RuntimeException("Rating must be between 1 and 5");
+        }
+        List<?> rs=reviewService.filterReviewByStars(courseID, Stars);
+        return ResponseEntity.ok(rs);
+    }
 }
