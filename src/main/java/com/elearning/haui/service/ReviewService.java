@@ -25,6 +25,21 @@ public class ReviewService {
     ReviewRepository reviewRepository;
     @Autowired 
     UserRepository userRepository;
+
+    //mapper review to DTO
+    public List<?> mapperReviewDTO(List<Review> listReview,List<ReviewDTO> listReviewDTO){
+        for(Review rv : listReview){
+            ReviewDTO dto=new ReviewDTO(
+            rv.getReviewId()
+            ,rv.getCourse().getCourseId()
+            ,rv.getUser().getUserId()
+            ,rv.getRating(),
+             rv.getComment(),
+             rv.getCreatedAt());
+             listReviewDTO.add(dto);
+        }
+        return listReviewDTO;
+    }
      //check Rating and Comment
     private void validateRatingAndComment(Double Rating, String Comment) {
         if (Rating == null || Rating <= 0 || Rating > 5) {
@@ -40,16 +55,7 @@ public class ReviewService {
         Double aveRating=AVGRatting(CourseId);
         List<Review> list=reviewRepository.findReviewsByCourseId(CourseId);
         List<ReviewDTO> listDTO=new ArrayList<>();
-        for(Review rv : list){
-            ReviewDTO dto=new ReviewDTO(
-            rv.getReviewId()
-            ,rv.getCourse().getCourseId()
-            ,rv.getUser().getUserId()
-            ,rv.getRating(),
-             rv.getComment(),
-             rv.getCreatedAt());
-             listDTO.add(dto);
-        }
+        mapperReviewDTO(list,listDTO);
         ReviewRestpone rs=new ReviewRestpone(aveRating, listDTO);
         return rs;
     }
@@ -72,7 +78,7 @@ public class ReviewService {
         return "Add review success";
 
     }
-
+    //update review
     public String UpdateReviewByUser(String Username,Long ReviewID,Double Rating,String Comment){
         User user=userRepository.findByUsername(Username);
         if (user == null) {
@@ -91,7 +97,7 @@ public class ReviewService {
         return "Update review success";
 
     }
-
+    //delete review
     public String deleteReviewByUser(String username, Long reviewId) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
@@ -112,6 +118,17 @@ public class ReviewService {
         Double avg= reviewRepository.getAverageRatingByCourseId(CourseID);
         if (avg == null) return 0.0;
         return Math.round(avg * 10.0) / 10.0;
+    }
+
+    //filter review by stars
+    public List<?> filterReviewByStars(Long CourseID,int levelStars)
+    {
+        int min=levelStars;
+        int max=levelStars+1;
+        List<Review> listReview=reviewRepository.findReviewsByRatingRangeForCourseId(min,max,CourseID);
+        List<ReviewDTO> rs=new ArrayList<>();
+        mapperReviewDTO(listReview,rs);
+        return rs;
     }
 
 }
