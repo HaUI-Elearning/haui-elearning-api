@@ -167,4 +167,9 @@ public class UserService {
 
         return user;
     }
+    //find user by mail
+    public User findUserByEmail(String email){
+        User user=userRepository.findUserByEmail(email);
+        return user;
+    }
 }

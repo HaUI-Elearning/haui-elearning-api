@@ -11,6 +11,7 @@ public class ReviewDTO {
     private long reviewId;
     private Long courseId;
     private Long userId;
+    private String name;
     private double rating;
     private String comment;
     private LocalDateTime createdAt ;

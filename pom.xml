@@ -31,6 +31,12 @@
         <validation-api.version>3.0.2</validation-api.version>
     </properties>
     <dependencies>
+        <!-- add JavaMailSender -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

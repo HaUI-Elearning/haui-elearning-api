@@ -93,6 +93,12 @@ public class SecurityConfiguration {
                                 "/api/v1/categories/**",
                                 "/api/v1/Review/getAll/**",
                                 "/api/v1/Review/filter/**",
+                                "/api/v1/verify-register-otp",
+                                "/api/v1/resend-otp",
+                                "/api/v1/forgot-password",
+                                "/api/v1/verify-forgot-password-otp",
+                                "/api/v1/forgot-password/reset",
+                                "/api/v1/resend-forgot-password-otp",
                                 // Swagger OpenAPI
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
