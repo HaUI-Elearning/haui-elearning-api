@@ -1,5 +1,8 @@
 package com.elearning.haui.api;
 
+import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -18,10 +21,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
 import com.elearning.haui.domain.dto.UserDetailsDTO;
+import com.elearning.haui.domain.entity.OtpToken;
 import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.domain.request.OtpVerifyRequest;
+import com.elearning.haui.domain.request.ResetPasswordRequest;
 import com.elearning.haui.domain.request.UpdateUserProfileRequest;
 import com.elearning.haui.domain.response.RestResponse;
 import com.elearning.haui.exception.IdInvalidException;
+import com.elearning.haui.repository.OtpTokenRepository;
+import com.elearning.haui.service.OtpService;
 import com.elearning.haui.service.RoleService;
 import com.elearning.haui.service.UserDetailsService;
 import com.elearning.haui.service.UserService;
@@ -32,7 +40,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/api/v1")
 public class UserAPI {
-
+    @Autowired
+    OtpService otpService;
+    @Autowired
+    OtpTokenRepository otpTokenRepository;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final RoleService roleService;
@@ -56,20 +67,134 @@ public class UserAPI {
         }
 
         User user = userService.registerDTOtoUser(registerDTO);
-
         user.setPassword(this.passwordEncoder.encode(user.getPassword()));
-
         user.setRole(this.roleService.findByName("USER"));
-
+        user.setEmailVerified(false); 
         User savedUser = userService.handleSaveUser(user);
+
+        // Gửi OTP xác thực email
+        otpService.sendOtpEmail(savedUser, "REGISTER");
 
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new RestResponse<>(
                         HttpStatus.CREATED.value(),
                         null,
-                        "User successfully registered",
+                        "User registered successfully. Please verify OTP sent to your email.",
                         savedUser));
     }
+    // Verify-register-otp
+    @PostMapping("/verify-register-otp")
+    public ResponseEntity<?> verifyRegisterOtp(@RequestBody OtpVerifyRequest request) {
+        OtpToken token = otpTokenRepository.findValidOtp(request.getUserId(), request.getOtp(), "REGISTER",LocalDateTime.now());
+
+        if (token != null && token.getExpiresAt().isAfter(LocalDateTime.now())) {
+            token.setVerified(true);
+            otpTokenRepository.save(token);
+
+            // cập nhật user đã xác thực email
+            User user = token.getUser();
+            user.setEmailVerified(true);
+            userService.handleSaveUser(user);
+
+            return ResponseEntity.ok("Email verified successfully.");
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OTP is incorrect or expired.");
+    }
+    //Resend OTP
+    @PostMapping("/resend-otp")
+    public ResponseEntity<?> resendOtp(@RequestParam String email) {
+        User user = userService.findUserByEmail(email);
+        //System.out.println(user.getEmail());
+        //System.out.println(user.isEmailVerified());
+        if (user == null || user.isEmailVerified()) {
+            return ResponseEntity.badRequest().body("Account does not exist or is already verified.");
+        }
+
+        otpService.sendOtpEmail(user, "REGISTER");
+
+        return ResponseEntity.ok("New OTP has been sent.");
+    }
+    // Forgot password
+   @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) throws Exception {
+        User user = userService.findUserByEmail(email);
+        if (user == null) {
+            throw new Exception("Email does not exist..");
+        }
+        otpService.sendOtpEmail(user, "FORGOT_PASSWORD");
+        return ResponseEntity.ok("Send OTP forgot password success");
+    }
+    //Verify-forgot-password
+    @PostMapping("/verify-forgot-password-otp")
+    public ResponseEntity<?> verifyForgotPasswordOtp(@RequestBody OtpVerifyRequest request) {
+        OtpToken token = otpTokenRepository.findValidOtp(request.getUserId(), request.getOtp(), "FORGOT_PASSWORD",LocalDateTime.now());
+
+        if (token != null
+                && token.getExpiresAt().isAfter(LocalDateTime.now())
+                && !token.isVerified()
+                && !token.isUsed()) {
+
+            token.setVerified(true);
+            otpTokenRepository.save(token);
+
+            return ResponseEntity.ok("OTP authentication successful. Proceed to reset password.");
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("OTP is incorrect, expired, or already used.");
+    }
+
+    //Reset pass
+    @PostMapping("/forgot-password/reset")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) throws Exception {
+       
+        OtpToken token = otpTokenRepository.findValidOtp(request.getUserId(), request.getOtp(), "FORGOT_PASSWORD",LocalDateTime.now());
+
+        if (token == null) {
+            throw new Exception("OTP is not authenticated or has expired.");
+        }
+
+        if (!token.isVerified() || token.isUsed()) {
+            throw new Exception("OTP is not verified or has already been used.");
+        }
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new Exception("Confirmation password does not match.");
+        }
+
+        User user = token.getUser();
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userService.handleSaveUser(user);
+
+        // set OTP đã được dùng
+        token.setUsed(true);
+        otpTokenRepository.save(token);
+
+        return ResponseEntity.ok("Password was reset successfully.");
+    }
+    //resend mail forgot password
+    @PostMapping("/resend-forgot-password-otp")
+    public ResponseEntity<?> resendForgotPasswordOtp(@RequestParam String email) {
+        User user = userService.findUserByEmail(email);
+        
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Email does not exist.");
+        }
+        
+        // check Account not verified
+        if (user.isEmailVerified()) {
+            otpService.sendOtpEmail(user, "FORGOT_PASSWORD");
+            return ResponseEntity.ok("New OTP has been sent.");
+        }
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Account not verified. Please verify your email first.");
+    }
+
+
+
+
+
+
 
     // Lấy danh sách người dùng, phân trang
     @GetMapping("/users")

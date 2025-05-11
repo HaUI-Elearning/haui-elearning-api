@@ -33,6 +33,7 @@ public class ReviewService {
             rv.getReviewId()
             ,rv.getCourse().getCourseId()
             ,rv.getUser().getUserId()
+            ,rv.getUser().getName()
             ,rv.getRating(),
              rv.getComment(),
              rv.getCreatedAt());
@@ -92,7 +93,7 @@ public class ReviewService {
         }
         rv.setRating(Rating);
         rv.setComment(Comment);
-        rv.setCreatedAt(LocalDateTime.now());
+        rv.setCreatedAt(rv.getCreatedAt());
         reviewRepository.save(rv);
         return "Update review success";
 

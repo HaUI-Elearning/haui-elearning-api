@@ -38,6 +38,9 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String introduce;
 
+    @Column(name = "email_verified")
+    private boolean emailVerified = false;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<FavoriteCourse> favoriteCourses;
 
@@ -50,5 +53,6 @@ public class User {
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
 
 }
