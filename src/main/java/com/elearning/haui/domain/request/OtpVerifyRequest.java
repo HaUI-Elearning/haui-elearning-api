@@ -5,6 +5,5 @@ import lombok.*;
 @Getter
 @Setter
 public class OtpVerifyRequest {
-    private long UserId;
     private String otp;
 }
