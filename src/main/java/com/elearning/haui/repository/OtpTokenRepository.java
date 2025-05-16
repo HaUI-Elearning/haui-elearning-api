@@ -13,13 +13,11 @@ import com.elearning.haui.domain.entity.OtpToken;
 public interface OtpTokenRepository extends JpaRepository<OtpToken,Long> {
     @Query("""
             select o from OtpToken o
-            where o.user.userId=:userId
-            and o.otpCode=:otpCode 
+            where o.otpCode=:otpCode 
             and o.type=:type
             and o.expiresAt > :currentTime and o.used = false 
      """)
 OtpToken findValidOtp(
-    @Param("userId") Long userId,
     @Param("otpCode") String otpCode,
     @Param("type") String type,
     @Param("currentTime") LocalDateTime currentTime

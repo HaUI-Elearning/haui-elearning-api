@@ -5,7 +5,6 @@ import lombok.*;
 @Getter
 @Setter
 public class ResetPasswordRequest {
-    private Long userId;
     private String otp;
     private String password;
     private String confirmPassword;

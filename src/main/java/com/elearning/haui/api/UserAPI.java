@@ -85,7 +85,7 @@ public class UserAPI {
     // Verify-register-otp
     @PostMapping("/verify-register-otp")
     public ResponseEntity<?> verifyRegisterOtp(@RequestBody OtpVerifyRequest request) {
-        OtpToken token = otpTokenRepository.findValidOtp(request.getUserId(), request.getOtp(), "REGISTER",LocalDateTime.now());
+        OtpToken token = otpTokenRepository.findValidOtp( request.getOtp(), "REGISTER",LocalDateTime.now());
 
         if (token != null && token.getExpiresAt().isAfter(LocalDateTime.now())) {
             token.setVerified(true);
@@ -128,7 +128,7 @@ public class UserAPI {
     //Verify-forgot-password
     @PostMapping("/verify-forgot-password-otp")
     public ResponseEntity<?> verifyForgotPasswordOtp(@RequestBody OtpVerifyRequest request) {
-        OtpToken token = otpTokenRepository.findValidOtp(request.getUserId(), request.getOtp(), "FORGOT_PASSWORD",LocalDateTime.now());
+        OtpToken token = otpTokenRepository.findValidOtp( request.getOtp(), "FORGOT_PASSWORD",LocalDateTime.now());
 
         if (token != null
                 && token.getExpiresAt().isAfter(LocalDateTime.now())
@@ -148,7 +148,7 @@ public class UserAPI {
     @PostMapping("/forgot-password/reset")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) throws Exception {
        
-        OtpToken token = otpTokenRepository.findValidOtp(request.getUserId(), request.getOtp(), "FORGOT_PASSWORD",LocalDateTime.now());
+        OtpToken token = otpTokenRepository.findValidOtp(request.getOtp(), "FORGOT_PASSWORD",LocalDateTime.now());
 
         if (token == null) {
             throw new Exception("OTP is not authenticated or has expired.");
