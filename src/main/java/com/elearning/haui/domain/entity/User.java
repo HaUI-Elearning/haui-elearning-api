@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -54,5 +55,9 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @OneToMany(mappedBy = "author")
+    private Set<Course> listCouse;
+
+   
 
 }

@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -36,20 +38,21 @@ public class Course {
     @Column(columnDefinition = "LONGTEXT")
     private String contents;
 
-    @Column(columnDefinition = "LONGTEXT")
-    private String chapters;
+    
 
     @Column
     private float star;
 
     @Column(nullable = false)
-    private int hour;
+    private Double hour;
 
     @Column(nullable = false)
     private double price;
-
-    @Column(length = 100)
-    private String author;
+    @Column(name = "sold")
+    private int sold;
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private User author;
 
     @Column(name = "created_at", nullable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -65,6 +68,10 @@ public class Course {
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<FavoriteCourse> favoriteUsers;
+
+    //
+    @OneToMany(mappedBy = "course")
+    private Set<Chapters> listChapters=new HashSet<>();
 
     @PrePersist
     protected void onCreate() {

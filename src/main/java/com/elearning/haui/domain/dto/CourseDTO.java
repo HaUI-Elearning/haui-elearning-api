@@ -1,6 +1,7 @@
 package com.elearning.haui.domain.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -20,10 +21,11 @@ public class CourseDTO {
     private String description;
     private String contents;
     private float star;
-    private int hour;
+    private Double hour;
     private double price;
+    private int sold;
     private String author;
-    private String chapter;
+    private List<ChaptersDTO> chapters;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 }

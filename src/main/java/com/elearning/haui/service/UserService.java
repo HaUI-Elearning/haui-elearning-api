@@ -4,9 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.elearning.haui.domain.entity.Course;
@@ -20,12 +27,21 @@ import com.elearning.haui.domain.dto.Meta;
 import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
 import com.elearning.haui.domain.dto.UserDetailsDTO;
+import com.elearning.haui.repository.RoleRepository;
 import com.elearning.haui.repository.UserRepository;
+import com.elearning.haui.utils.SecurityUtil;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final EnrollmentService enrollmentService;
+    @Autowired
+    RoleRepository roleRepository;
+
+   
+    @Autowired
+    private SecurityUtil securityUtil;
+
 
     public UserService(UserRepository userRepository, EnrollmentService enrollmentService) {
         this.userRepository = userRepository;
@@ -171,5 +187,43 @@ public class UserService {
     public User findUserByEmail(String email){
         User user=userRepository.findUserByEmail(email);
         return user;
+    }
+
+    //Register Teacher
+     public String registerTeacher(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("User not found for username: " + username);
+        }
+
+        Role role = roleRepository.findByName("TEACHER");
+        if (role == null) {
+            role = new Role();
+            role.setName("TEACHER");
+            role.setDescription("Giáo viên");
+            role = roleRepository.save(role);
+        }
+
+        user.setRole(role);
+        userRepository.save(user);
+
+         // Cập nhật token dựa trên Authentication hiện tại
+        Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
+
+        //  Tạo Authentication mới có thông tin role mới
+        List<GrantedAuthority> updatedAuthorities = List.of(new SimpleGrantedAuthority("ROLE_TEACHER"));
+
+        Authentication newAuth = new UsernamePasswordAuthenticationToken(
+            currentAuth.getPrincipal(),
+            currentAuth.getCredentials(),
+            updatedAuthorities
+        );
+
+        // Cập nhật lại Authentication trong context
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+        String newToken = securityUtil.createToken(newAuth);
+
+        return newToken;
     }
 }

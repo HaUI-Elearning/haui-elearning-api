@@ -34,6 +34,9 @@ import com.elearning.haui.service.RoleService;
 import com.elearning.haui.service.UserDetailsService;
 import com.elearning.haui.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -122,7 +125,13 @@ public class UserAPI {
         if (user == null) {
             throw new Exception("Email does not exist..");
         }
-        otpService.sendOtpEmail(user, "FORGOT_PASSWORD");
+        if(user.isEmailVerified()){
+             otpService.sendOtpEmail(user, "FORGOT_PASSWORD");
+        }
+        else{
+            throw new RuntimeException("User not verify");
+        }
+       
         return ResponseEntity.ok("Send OTP forgot password success");
     }
     //Verify-forgot-password
@@ -190,6 +199,13 @@ public class UserAPI {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Account not verified. Please verify your email first.");
     }
 
+    //Register Teacher
+    @Operation(summary = "Đăng kí thành giáo viên Respone trả ra token mới của giáo viên,fe xóa token cũ ,lưu token mới vào localstorage")
+    @PostMapping("/Register/Teacher")
+    public ResponseEntity<?> RegisterTeacher(Authentication authentication){
+        String result=userService.registerTeacher(authentication.getName());
+        return ResponseEntity.ok(result);
+    }
 
 
 

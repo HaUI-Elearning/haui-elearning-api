@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -51,7 +53,7 @@ public class SecurityConfiguration {
     public UserDetailsService userDetailsService(UserService userService) {
         return new CustomUserDetailsService(userService);
     }
-
+    
     @Bean
     public DaoAuthenticationProvider authProvider(
             PasswordEncoder passwordEncoder,
@@ -76,7 +78,7 @@ public class SecurityConfiguration {
         rememberMeServices.setAlwaysRemember(true);
         return rememberMeServices;
     }
-
+    
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http,
@@ -99,6 +101,7 @@ public class SecurityConfiguration {
                                 "/api/v1/verify-forgot-password-otp",
                                 "/api/v1/forgot-password/reset",
                                 "/api/v1/resend-forgot-password-otp",
+                
                                 // Swagger OpenAPI
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
@@ -107,6 +110,8 @@ public class SecurityConfiguration {
                                 "/configuration/**",
                                 "/webjars/**"
                         ).permitAll()
+                        .requestMatchers("/api/v1/Register/Teacher").hasRole("USER")
+                        .requestMatchers("/api/v1/Teacher/**").hasRole("TEACHER")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())

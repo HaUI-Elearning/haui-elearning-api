@@ -44,4 +44,18 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("SELECT c FROM Course c WHERE c.price > 0")
     List<Course> findPaidCourses();
 
+    //Get all course created by Teacher
+    @Query("""
+            select c from Course c
+            where c.author.username=:authorName
+             """)
+    List<Course> getAllCourseByTeacher(@Param ("authorName") String authorName);
+    //Get course by Teacher
+    @Query("""
+            SELECT c FROM Course c 
+            WHERE c.author.username=:authorName
+            and c.courseId=:courseId
+            """)
+    Course getCoursesIdByTeacher(@Param ("authorName") String authorName
+                                    , @Param("courseId") Long courseId);
 }
