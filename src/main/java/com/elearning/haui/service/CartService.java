@@ -9,9 +9,11 @@ import org.springframework.stereotype.Service;
 
 import com.elearning.haui.domain.dto.CartDTO;
 import com.elearning.haui.domain.dto.CartDetailDTO;
+import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.entity.Cart;
 import com.elearning.haui.domain.entity.CartDetail;
+import com.elearning.haui.domain.entity.Chapters;
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.repository.CartDetailRepository;
@@ -82,7 +84,17 @@ public class CartService {
 
         // Cập nhật lại tổng số lượng và tổng giá trị của Cart
         updateCart(cart);
+        //get chapter
+        List<ChaptersDTO> listChapterDTO=new ArrayList<>();
+        for (Chapters c : course.getListChapters()) {
+            ChaptersDTO chapterDTO=new ChaptersDTO();
+            chapterDTO.setTitle(c.getTitle());
+            chapterDTO.setDescription(c.getDescription());
+            chapterDTO.setPosition(c.getPosition());
+            chapterDTO.setCreatedAt(c.getCreatedAt());
+            listChapterDTO.add(chapterDTO);
 
+        }
         return new CourseDTO(
                 course.getCourseId(),
                 course.getName(),
@@ -92,8 +104,9 @@ public class CartService {
                 course.getStar(),
                 course.getHour(),
                 course.getPrice(),
-                course.getAuthor(),
-                course.getChapters(),
+                course.getSold(),
+                course.getAuthor().getName(),
+                listChapterDTO,
                 course.getCreatedAt());
     }
 

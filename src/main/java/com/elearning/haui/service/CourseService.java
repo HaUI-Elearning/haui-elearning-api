@@ -1,11 +1,13 @@
 package com.elearning.haui.service;
 
+import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.dto.CourseSalesDTO;
 import com.elearning.haui.domain.dto.Meta;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
 import com.elearning.haui.domain.dto.ReviewDTO;
 import com.elearning.haui.domain.entity.Category;
+import com.elearning.haui.domain.entity.Chapters;
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.Review;
 import com.elearning.haui.domain.entity.User;
@@ -68,6 +70,17 @@ public class CourseService {
     }
 
     public CourseDTO convertToCourseDTO(Course course) {
+        //chapters
+        List<ChaptersDTO> listChapterDTO=new ArrayList<>();
+        for (Chapters c : course.getListChapters()) {
+            ChaptersDTO chapterDTO=new ChaptersDTO();
+            chapterDTO.setTitle(c.getTitle());
+            chapterDTO.setDescription(c.getDescription());
+            chapterDTO.setPosition(c.getPosition());
+            chapterDTO.setCreatedAt(c.getCreatedAt());
+            listChapterDTO.add(chapterDTO);
+
+        }
         return new CourseDTO(
                 course.getCourseId(),
                 course.getName(),
@@ -77,8 +90,9 @@ public class CourseService {
                 course.getStar(),
                 course.getHour(),
                 course.getPrice(),
-                course.getAuthor(),
-                course.getChapters(),
+                course.getSold(),
+                course.getAuthor().getName(),
+                listChapterDTO,
                 course.getCreatedAt());
     }
 

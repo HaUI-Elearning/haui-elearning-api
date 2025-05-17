@@ -1,11 +1,14 @@
 package com.elearning.haui.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.entity.Chapters;
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.Enrollment;
 import com.elearning.haui.repository.EnrollmentRepository;;
@@ -24,6 +27,17 @@ public class EnrollmentService {
 
   // Ánh xạ từ Course sang CourseDTO
   private CourseDTO mapToCourseDTO(Course course) {
+    //chapter
+    List<ChaptersDTO> listChapterDTO=new ArrayList<>();
+        for (Chapters c : course.getListChapters()) {
+            ChaptersDTO chapterDTO=new ChaptersDTO();
+            chapterDTO.setTitle(c.getTitle());
+            chapterDTO.setDescription(c.getDescription());
+            chapterDTO.setPosition(c.getPosition());
+            chapterDTO.setCreatedAt(c.getCreatedAt());
+            listChapterDTO.add(chapterDTO);
+
+        }
     return new CourseDTO(
         course.getCourseId(),
         course.getName(),
@@ -33,8 +47,9 @@ public class EnrollmentService {
         course.getStar(),
         course.getHour(),
         course.getPrice(),
-        course.getAuthor(),
-        course.getChapters(),
+        course.getSold(),
+        course.getAuthor().getName(),
+        listChapterDTO,
         course.getCreatedAt());
   }
 

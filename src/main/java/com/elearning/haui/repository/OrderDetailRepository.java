@@ -17,7 +17,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
             "od.course.price, " + // Lấy giá từ Course
             "SUM(od.quantity), " + // Tính tổng số lượng bán
             "SUM(od.quantity * od.course.price), " + // Tính doanh thu
-            "od.course.author) " + // Lấy tên tác giả từ Course
+            "od.course.author.name) " + // Lấy tên tác giả từ Course
             "FROM OrderDetail od " +
             "JOIN CourseCategory cc ON cc.course.courseId = od.course.courseId " + // Kết nối với CourseCategory
             "JOIN Category cat ON cat.categoryId = cc.category.categoryId " + // Liên kết với bảng Category

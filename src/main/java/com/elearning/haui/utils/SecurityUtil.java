@@ -1,7 +1,9 @@
 package com.elearning.haui.utils;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.time.temporal.ChronoUnit;
 
 import javax.crypto.SecretKey;
@@ -43,18 +45,23 @@ public class SecurityUtil {
         Instant now = Instant.now();
         Instant validity = now.plus(this.jwtkExpiration, ChronoUnit.SECONDS);
 
-        // @formatter:off
+        // Lấy danh sách quyền dưới dạng chuỗi
+        List<String> authorities = authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
-            .issuedAt(now)
-            .expiresAt(validity)
-            .subject(authentication.getName())
-            .claim("codernewbiew", authentication)
-            .build();
+                .issuedAt(now)
+                .expiresAt(validity)
+                .subject(authentication.getName())
+                .claim("codernewbie", authorities) // Lưu danh sách quyền: ["ROLE_USER"]
+                .build();
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
         return this.jwtEncoder
-            .encode(JwtEncoderParameters.from(jwsHeader,claims))
-            .getTokenValue();
-    }
+                .encode(JwtEncoderParameters.from(jwsHeader, claims))
+                .getTokenValue();
+}
 
     /**
      * Get the login of the current user.
