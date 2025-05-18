@@ -105,7 +105,7 @@ public class CloudinaryService {
                             "resource_type", resourceType,
                             "public_id", publicId,
                             "overwrite", false,
-                            "chunk_size", 5 * 1024 * 1024,
+                            "chunk_size", 100 * 1024 * 1024,
                             "context", "file_hash=" + fileHash // metadata
                     )
             );
