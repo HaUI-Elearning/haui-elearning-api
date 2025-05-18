@@ -1,5 +1,6 @@
 package com.elearning.haui.api;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.dto.LessonsDTO;
 import com.elearning.haui.service.ChaptersService;
+import com.elearning.haui.service.LessonsService;
 import com.elearning.haui.service.TeacherService;
 
 @RestController
@@ -29,6 +32,9 @@ public class TeacherAPI {
 
     @Autowired 
     ChaptersService chaptersService;
+
+    @Autowired
+    LessonsService lessonsService;
 
     //Courses
     //Get course by Teacher
@@ -131,4 +137,61 @@ public class TeacherAPI {
         return ResponseEntity.ok(result);
     }
     //Lessons
+
+    //Get all Lessons
+    @GetMapping("/getAll/Lesson/{ChapterId}")
+    public ResponseEntity<?> getAllLesson(Authentication authentication,
+    @PathVariable("ChapterId") Long ChapterId
+    )
+    {
+        List<LessonsDTO> result=lessonsService.getAllLessonByTeacher(authentication.getName(), ChapterId);
+        return ResponseEntity.ok(result);
+    }
+
+    //Get Lesson by Id
+    @GetMapping("/getlesson/{ChapterId}/{LessonId}")
+    public ResponseEntity<?> getLesson(Authentication authentication
+    ,@PathVariable("ChapterId") Long ChapterId
+    ,@PathVariable("LessonId") Long LessonId
+    )
+    {
+        LessonsDTO  result=lessonsService.getLessonById(authentication.getName(), ChapterId, LessonId);
+        return ResponseEntity.ok(result);
+    }
+
+    //Create Lesson by Teacher
+    @PostMapping("/Lesson/add")
+    public ResponseEntity<?> CreateLesson(
+    Authentication authentication,
+    @RequestParam  Long chapterId,
+    @RequestParam  String title,
+    @RequestParam  MultipartFile videoFile,
+    @RequestParam  MultipartFile pdfFile
+    ) throws IOException
+    {
+        LessonsDTO result=lessonsService.createLessonsByTeacher(authentication.getName(), chapterId, title, videoFile, pdfFile);
+        return ResponseEntity.ok(result);
+    }
+    //Update Lesson
+    @PutMapping("/Lesson/update/{lessonId}")
+    public ResponseEntity<?> UpdateLesson(Authentication authentication,
+    @RequestParam Long chapterId,
+    @PathVariable("lessonId") Long lessonId,
+    @RequestParam String title,
+    @RequestParam int Position,
+    @RequestParam MultipartFile videoFile,
+    @RequestParam MultipartFile pdfFile) throws IOException
+    {
+        LessonsDTO result=lessonsService.updateLessonsByTeacher(authentication.getName(), chapterId, lessonId, title, Position, videoFile, pdfFile);
+        return ResponseEntity.ok(result);
+    }
+    //Delete Lesson
+    @DeleteMapping("/Lesson/delete/{lessonId}")
+    public ResponseEntity<?> DeleteLesson(Authentication authentication,
+    @RequestParam Long chapterId,
+    @PathVariable("lessonId") Long lessonId)
+    {
+        boolean result=lessonsService.deleteLesson(authentication.getName(), chapterId, lessonId);
+        return ResponseEntity.ok(result);
+    }
 }
