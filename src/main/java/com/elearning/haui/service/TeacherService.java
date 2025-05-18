@@ -39,6 +39,7 @@ public class TeacherService {
             List<ChaptersDTO> listChapterDTO=new ArrayList<>();
             for(Chapters chapter : c.getListChapters()){
                 ChaptersDTO chaptersDTO=new ChaptersDTO();
+                chaptersDTO.setId(chapter.getChapterId());
                 chaptersDTO.setTitle(chapter.getTitle());
                 chaptersDTO.setPosition(chapter.getPosition());
                 chaptersDTO.setDescription(chapter.getDescription());
@@ -67,6 +68,7 @@ public class TeacherService {
         List<ChaptersDTO> listChapterDTO = new ArrayList<>();
         for (Chapters chapter : course.getListChapters()) {
             ChaptersDTO chaptersDTO = new ChaptersDTO();
+            chaptersDTO.setId(chapter.getChapterId());
             chaptersDTO.setTitle(chapter.getTitle());
             chaptersDTO.setPosition(chapter.getPosition());
             chaptersDTO.setDescription(chapter.getDescription());

@@ -27,6 +27,8 @@ public class Lessons {
     private int position;
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "duration")
+    private Double duration;
 
 
 }
