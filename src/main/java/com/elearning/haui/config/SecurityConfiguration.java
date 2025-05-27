@@ -112,6 +112,7 @@ public class SecurityConfiguration {
                         ).permitAll()
                         .requestMatchers("/api/v1/Register/Teacher").hasRole("USER")
                         .requestMatchers("/api/v1/Teacher/**").hasRole("TEACHER")
+                        .requestMatchers("/api/v1/Admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())

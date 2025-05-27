@@ -189,6 +189,12 @@ public class UserService {
         return user;
     }
 
+    //find user by mail
+    public User findUserByName(String name){
+        User user=userRepository.findByName(name);
+        return user;
+    }
+
     //Register Teacher
      public String registerTeacher(String username) {
         User user = userRepository.findByUsername(username);

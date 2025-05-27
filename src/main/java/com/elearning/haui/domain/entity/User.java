@@ -1,5 +1,6 @@
 package com.elearning.haui.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -52,10 +53,11 @@ public class User {
 
     private String refreshToken;
 
-    @Column(nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "author")
+    @JsonBackReference
     private Set<Course> listCouse;
 
    
