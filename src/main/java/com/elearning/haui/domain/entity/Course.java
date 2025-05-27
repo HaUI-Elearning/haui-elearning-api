@@ -48,10 +48,13 @@ public class Course {
 
     @Column(nullable = false)
     private double price;
+
     @Column(name = "sold")
     private int sold;
+
     @ManyToOne
     @JoinColumn(name = "author_id")
+    @JsonManagedReference
     private User author;
 
     @Column(name = "created_at", nullable = false)
@@ -71,6 +74,7 @@ public class Course {
 
     //
     @OneToMany(mappedBy = "course")
+    @JsonManagedReference
     private Set<Chapters> listChapters=new HashSet<>();
 
     @PrePersist

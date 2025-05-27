@@ -23,7 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,13 +43,21 @@ public class CourseService {
     private final CategoryRepository categoryRepository;
     private final CourseCategoryRepository courseCategoryRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final LocalDateTime now=LocalDateTime.now();
+    private final UserRepository userRepository;
+    ImgBBService imgBBService;
 
-    public CourseService(CourseRepository courseRepository, CategoryRepository categoryRepository,
-            CourseCategoryRepository courseCategoryRepository, OrderDetailRepository orderDetailRepository) {
-        this.courseRepository = courseRepository;
-        this.categoryRepository = categoryRepository;
-        this.courseCategoryRepository = courseCategoryRepository;
+    public CourseService(ImgBBService imgBBService,
+                         OrderDetailRepository orderDetailRepository,
+                         CourseCategoryRepository courseCategoryRepository,
+                         CategoryRepository categoryRepository,
+                         CourseRepository courseRepository, UserRepository userRepository) {
+        this.imgBBService = imgBBService;
         this.orderDetailRepository = orderDetailRepository;
+        this.courseCategoryRepository = courseCategoryRepository;
+        this.categoryRepository = categoryRepository;
+        this.courseRepository = courseRepository;
+        this.userRepository = userRepository;
     }
 
     public void handleSaveProduct(Course course) {
@@ -58,7 +69,11 @@ public class CourseService {
     }
 
     public void deleteCourseById(Long id) {
-        this.courseRepository.deleteById(id);
+        Course course = this.courseRepository.findById(id).orElse(null);
+        if(course == null) {
+            throw new RuntimeException("Course not found");
+        }
+        this.courseRepository.delete(course);
     }
 
     public Course getCourseById(Long id) {
@@ -67,6 +82,27 @@ public class CourseService {
 
     public Page<Course> findPaginated(PageRequest pageRequest) {
         return this.courseRepository.findAll(pageRequest);
+    }
+
+    public ResultPaginationDTO fetchAllCourses(Pageable pageable) {
+        Page<Course> pageCourses = this.courseRepository.findAll(pageable);
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        Meta meta = new Meta();
+
+        meta.setPage(pageCourses.getNumber() + 1);
+        meta.setTotal(pageCourses.getTotalElements());
+
+        meta.setPages(pageCourses.getTotalPages());
+        meta.setTotal(pageCourses.getTotalElements());
+
+        rs.setMeta(meta);
+        List<CourseDTO> courseDTOs = pageCourses.getContent().stream()
+                .map(this::convertToCourseDTO)
+                .collect(Collectors.toList());
+
+        rs.setResult(courseDTOs);
+
+        return rs;
     }
 
     public CourseDTO convertToCourseDTO(Course course) {
@@ -256,5 +292,76 @@ public class CourseService {
                     .toList();
         }
     }
-   
+
+    public CourseDTO CreateCourse(
+            String username
+            , String content
+            , String Description
+            , String name
+            , Double hour
+            , Double price
+            , MultipartFile file
+    ){
+        User user=userRepository.findByUsername(username);
+        if(user==null){
+            throw new RuntimeException("User not found");
+        }
+        Course course=new Course();
+        course.setAuthor(user);
+        course.setContents(content);
+        course.setCreatedAt(now);
+        course.setDescription(Description);
+        course.setHour(hour);
+        course.setName(name);
+        course.setPrice(price);
+        course.setStar(0);
+        String imageUrl = imgBBService.checkAndUploadImage(file);
+        if (imageUrl != null) {
+            course.setThumbnail(imageUrl);
+        }
+        course.setSold(0);
+        courseRepository.save(course);
+        CourseDTO courseDTO= convertToCourseDTO(course);
+        return courseDTO;
+    }
+
+    //update course
+    public CourseDTO updateCourse(long id, String courseName, String description, String content, String author, double hour, double price, MultipartFile file) {
+        Course course = courseRepository.findById(id).orElse(null);
+        if (course == null) {
+            throw new RuntimeException("Course not found");
+        }
+
+        // Cập nhật thông tin cơ bản
+        course.setName(courseName);
+        course.setDescription(description);
+        course.setContents(content);
+        course.setHour(hour);
+        course.setPrice(price);
+
+        // Cập nhật tác giả nếu cần
+        User user = userRepository.findByName(author);
+        if (user == null) {
+            User userNew = new User();
+            userNew.setUsername(author.replace(" ", ""));
+            userNew.setName(author);
+            userNew.setEmail(author.replace(" ", "") + "@gmail.com"); // hoặc email mặc định
+            userNew.setPassword("123456");
+            userNew.setEmailVerified(true);
+            user = userRepository.save(userNew);
+        }
+        course.setAuthor(user);
+
+        // Cập nhật ảnh nếu có file mới
+        if (file != null && !file.isEmpty()) {
+            String imageUrl = imgBBService.checkAndUploadImage(file);
+            if (imageUrl != null) {
+                course.setThumbnail(imageUrl);
+            }
+        }
+
+        courseRepository.save(course);
+
+        return convertToCourseDTO(course);
+    }
 }

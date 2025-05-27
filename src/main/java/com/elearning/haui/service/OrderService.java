@@ -1,15 +1,27 @@
 package com.elearning.haui.service;
 
+import com.elearning.haui.domain.dto.*;
+import com.elearning.haui.domain.entity.Chapters;
+import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.Order;
 import com.elearning.haui.domain.entity.OrderDetail;
+import com.elearning.haui.enums.OrderStatus;
 import com.elearning.haui.repository.OrderDetailRepository;
 import com.elearning.haui.repository.OrderRepository;
 
+import jakarta.transaction.Transactional;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -29,8 +41,14 @@ public class OrderService {
         return this.orderRepository.findAll();
     }
 
-    public Order getOrderById(Long id) {
-        return this.orderRepository.findByOrderId(id);
+    public Order getOrderById(Long id) { return this.orderRepository.findByOrderId(id); }
+
+    public OrderDTO getOrderDTOById(Long id) {
+        Order order = this.orderRepository.findById(id).orElse(null);
+        if (order == null) {
+            throw new RuntimeException("Order not found");
+        }
+        return convertToOrderDTO(order);
     }
 
     public void handleSaveOrder(Order order) {
@@ -41,8 +59,87 @@ public class OrderService {
         this.orderRepository.save(order);
     }
 
+    @Transactional
     public void deleteOrderById(Long id) {
-        this.orderRepository.deleteById(id);
+        Order order = this.orderRepository.findById(id).orElse(null);
+        if (order == null) {
+            throw new RuntimeException("Order not found");
+        }
+        this.orderRepository.delete(order);
     }
 
+    public CourseDTO convertToOrderDTO(Course course) {
+        //chapters
+        List<ChaptersDTO> listChapterDTO=new ArrayList<>();
+        for (Chapters c : course.getListChapters()) {
+            ChaptersDTO chapterDTO=new ChaptersDTO();
+            chapterDTO.setTitle(c.getTitle());
+            chapterDTO.setDescription(c.getDescription());
+            chapterDTO.setPosition(c.getPosition());
+            chapterDTO.setCreatedAt(c.getCreatedAt());
+            listChapterDTO.add(chapterDTO);
+
+        }
+        return new CourseDTO(
+                course.getCourseId(),
+                course.getName(),
+                course.getThumbnail(),
+                course.getDescription(),
+                course.getContents(),
+                course.getStar(),
+                course.getHour(),
+                course.getPrice(),
+                course.getSold(),
+                course.getAuthor().getName(),
+                listChapterDTO,
+                course.getCreatedAt());
+    }
+
+    public ResultPaginationDTO fetchAllCourses(Pageable pageable) {
+        Page<Order> pageOrders = this.orderRepository.findAll(pageable);
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        Meta meta = new Meta();
+
+        meta.setPage(pageOrders.getNumber() + 1);
+        meta.setTotal(pageOrders.getTotalElements());
+
+        meta.setPages(pageOrders.getTotalPages());
+        meta.setTotal(pageOrders.getTotalElements());
+
+        rs.setMeta(meta);
+        List<OrderDTO> orderDTOs = pageOrders.getContent().stream()
+                .map(this::convertToOrderDTO)
+                .collect(Collectors.toList());
+
+        rs.setResult(orderDTOs);
+
+        return rs;
+    }
+
+    public OrderDTO convertToOrderDTO(Order order) {
+        return new OrderDTO(
+          order.getOrderId(),
+          order.getUser().getName(),
+          order.getCreatedAt(),
+          order.getStatus(),
+          order.getTotalAmount(),
+          order.getPaymentMethod()
+        );
+    }
+
+    @Transactional
+    public void updateOrderStatus(Long id, String status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        try {
+            OrderStatus newStatus = OrderStatus.valueOf(status.toUpperCase());
+            order.setStatus(newStatus);
+            order.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            orderRepository.save(order);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status value");
+        }
+
+    }
 }
