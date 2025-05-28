@@ -14,6 +14,7 @@ import com.elearning.haui.domain.entity.Review;
 import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.domain.response.ReviewRestpone;
 import com.elearning.haui.repository.CourseRepository;
+import com.elearning.haui.repository.EnrollmentRepository;
 import com.elearning.haui.repository.ReviewRepository;
 import com.elearning.haui.repository.UserRepository;
 
@@ -25,7 +26,8 @@ public class ReviewService {
     ReviewRepository reviewRepository;
     @Autowired 
     UserRepository userRepository;
-
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
     //mapper review to DTO
     public List<?> mapperReviewDTO(List<Review> listReview,List<ReviewDTO> listReviewDTO){
         for(Review rv : listReview){
@@ -40,6 +42,19 @@ public class ReviewService {
              listReviewDTO.add(dto);
         }
         return listReviewDTO;
+    }
+    //mapper Review to DTO
+    public ReviewDTO mapReviewToDTO(Review rv)
+    {
+        ReviewDTO dto=new ReviewDTO(
+            rv.getReviewId()
+            ,rv.getCourse().getCourseId()
+            ,rv.getUser().getUserId()
+            ,rv.getUser().getName()
+            ,rv.getRating(),
+             rv.getComment(),
+             rv.getCreatedAt());
+        return dto;
     }
      //check Rating and Comment
     private void validateRatingAndComment(Double Rating, String Comment) {
@@ -62,12 +77,16 @@ public class ReviewService {
     }
 
     //add review by User
-    public String addReviewByUser(String Username,Long CourseID,Double Rating,String Comment){
+    public ReviewDTO addReviewByUser(String Username,Long CourseID,Double Rating,String Comment){
         User user=userRepository.findByUsername(Username);
         if (user == null) {
             throw new RuntimeException("User not found with username: " + Username);
         }
         Course course=courseRepository.findById(CourseID).orElseThrow(()->new RuntimeException("Not found course"));
+        boolean isEnrolled = enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(user.getUserId(), course.getCourseId());
+        if (!isEnrolled) {
+            throw new RuntimeException("User has not enrolled in this course, cannot add review.");
+        }
         validateRatingAndComment(Rating, Comment); 
         Review rv=new Review();
         rv.setUser(user);
@@ -76,7 +95,8 @@ public class ReviewService {
         rv.setComment(Comment);
         rv.setCreatedAt(LocalDateTime.now());
         reviewRepository.save(rv);
-        return "Add review success";
+        ReviewDTO dto=mapReviewToDTO(rv);
+        return dto;
 
     }
     //update review

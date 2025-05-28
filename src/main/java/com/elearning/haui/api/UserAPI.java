@@ -36,6 +36,7 @@ import com.elearning.haui.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -58,7 +59,7 @@ public class UserAPI {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RestResponse<User>> register(@RequestBody RegisterDTO registerDTO) throws Exception {
+    public ResponseEntity<RestResponse<User>> register(@Valid @RequestBody RegisterDTO registerDTO) throws Exception {
         if (userService.checkEmailExist(registerDTO.getEmail())) {
             throw new Exception("Email already exists.");
         }
@@ -68,7 +69,9 @@ public class UserAPI {
         if (!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())) {
             throw new Exception("Passwords do not match.");
         }
-
+        if (registerDTO.getUsername().matches("^\\d+$")) {
+            throw new IllegalArgumentException("Username cannot be all numbers");
+        }
         User user = userService.registerDTOtoUser(registerDTO);
         user.setPassword(this.passwordEncoder.encode(user.getPassword()));
         user.setRole(this.roleService.findByName("USER"));
