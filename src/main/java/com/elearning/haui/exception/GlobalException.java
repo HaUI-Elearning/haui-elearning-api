@@ -34,18 +34,22 @@ public class GlobalException {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<RestResponse<Object>> validationError(MethodArgumentNotValidException ex) {
-        BindingResult result = ex.getBindingResult();
-        final List<FieldError> fieldError = result.getFieldErrors();
+public ResponseEntity<RestResponse<Object>> validationError(MethodArgumentNotValidException ex) {
+    BindingResult result = ex.getBindingResult();
+    List<FieldError> fieldErrors = result.getFieldErrors();
 
-        RestResponse<Object> res = new RestResponse<Object>();
-        res.setStatusCode(HttpStatus.BAD_REQUEST.value());
-        res.setError(ex.getBody().getDetail());
+    // Gom lỗi dưới dạng key: message (tuỳ bạn muốn list hay string)
+    List<String> errors = fieldErrors.stream()
+            .map(FieldError::getDefaultMessage)
+            .collect(Collectors.toList());
 
-        List<String> errors = fieldError.stream().map(f -> f.getDefaultMessage()).collect(Collectors.toList());
-        res.setMessage(errors.size() > 1 ? errors : errors.get(0));
+    RestResponse<Object> res = new RestResponse<>();
+    res.setStatusCode(HttpStatus.BAD_REQUEST.value());
+    res.setError("Validation error");
+    res.setMessage(errors.size() == 1 ? errors.get(0) : errors);
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-    }
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+}
+
 
 }

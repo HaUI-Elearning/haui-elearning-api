@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.elearning.haui.domain.dto.ReviewDTO;
 import com.elearning.haui.domain.entity.Review;
 import com.elearning.haui.domain.response.ReviewRestpone;
 import com.elearning.haui.service.ReviewService;
@@ -37,7 +38,7 @@ public class ReviewAPI {
         @RequestParam Double Rating,
         @RequestParam String Comment)
     {
-        String rs=reviewService.addReviewByUser(authentication.getName(), CourseID, Rating, Comment);
+        ReviewDTO rs=reviewService.addReviewByUser(authentication.getName(), CourseID, Rating, Comment);
         return ResponseEntity.ok(rs);
     }
 
