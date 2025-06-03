@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties.Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +23,9 @@ import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
 import com.elearning.haui.domain.dto.ReviewDTO;
 import com.elearning.haui.domain.entity.Category;
+import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.exception.IdInvalidException;
+import com.elearning.haui.repository.UserRepository;
 import com.elearning.haui.service.CategoryService;
 import com.elearning.haui.service.CourseService;
 
@@ -29,36 +34,54 @@ import com.elearning.haui.service.CourseService;
 public class CourseAPI {
     private final CategoryService categoryService;
     private final CourseService courseService;
+    @Autowired
+    UserRepository userRepository;
     public CourseAPI(CategoryService categoryService, CourseService courseService) {
         this.categoryService = categoryService;
         this.courseService = courseService;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getCourseDetail(@PathVariable Long id)
-            throws RuntimeException {
-
-        // Gọi service để lấy thông tin khóa học
-        CourseDTO courseDetail = courseService.getCourseDetail(id);
-
-        // Trả về thông tin khóa học
-        return ResponseEntity.ok(courseDetail);
-
+    public String getCurrentUsername() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                return ((UserDetails) principal).getUsername();
+            } else if (principal instanceof Jwt jwt) {
+                return jwt.getClaimAsString("sub");
+            } else {
+                return authentication.getName();
+            }
+        }
+        return null;
     }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCourseDetail(@PathVariable Long id) {
+    String username = getCurrentUsername();
+    User user = userRepository.findByUsername(username);
+
+    System.out.println("Username: " + username);
+
+    Long userId = (user != null) ? user.getUserId() : null;
+
+    CourseDTO courseDetail = courseService.getCourseDetail(id, userId);
+    return ResponseEntity.ok(courseDetail);
+}
+
 
     @GetMapping("/categorycourse")
     public ResponseEntity<List<CategoryCourseDTO>> getCategoryCourse() {
+        String username = getCurrentUsername();
+        User user = userRepository.findByUsername(username);
+        System.out.println("Username: " + username);
+        Long userId = (user != null) ? user.getUserId() : null;
         List<Category> categories = categoryService.getAllCategories();
-
-        // Duyệt qua từng thể loại và ánh xạ sang CategoryCourseDTO
         List<CategoryCourseDTO> categoryCourseDTOs = categories.stream().map(category -> {
-
-            List<CourseDTO> courses = courseService.getCoursesByCategoryWithLimit(category.getCategoryId());
-
+            List<CourseDTO> courses = courseService.getCoursesByCategoryWithLimit(category.getCategoryId(), userId);
             return new CategoryCourseDTO(category.getCategoryId(), category.getName(), courses);
         }).collect(Collectors.toList());
-
-        // Trả về danh sách với HTTP 200 OK
         return ResponseEntity.ok(categoryCourseDTOs);
     }
 
@@ -76,9 +99,11 @@ public class CourseAPI {
         int current = Integer.parseInt(currentOptional);
         int pageSize = Integer.parseInt(pageSizeOptional);
         Pageable pageable = PageRequest.of(current - 1, pageSize);
-
-        // Gọi phương thức getCourses với phân trang và các tham số lọc
-        return courseService.getCourses(hourRange, minPrice, maxPrice, isPaid, starRating, categoryId, pageable);
+        String username = getCurrentUsername();
+        User user = userRepository.findByUsername(username);
+        System.out.println("Username: " + username);
+        Long userId = (user != null) ? user.getUserId() : null;
+        return courseService.getCourses(hourRange, minPrice, maxPrice, isPaid, starRating, categoryId, pageable, userId);
     }
 
     @GetMapping("/category/{categoryId}")
@@ -90,8 +115,10 @@ public class CourseAPI {
         int current = Integer.parseInt(currentOptional);
         int pageSize = Integer.parseInt(pageSizeOptional);
         Pageable pageable = PageRequest.of(current - 1, pageSize);
-
-        // Gọi phương thức getCourses với phân trang và các tham số lọc
-        return courseService.getCoursesByCategory(categoryId, pageable);
+        String username = getCurrentUsername();
+        User user = userRepository.findByUsername(username);
+        System.out.println("Username: " + username);
+        Long userId = (user != null) ? user.getUserId() : null;
+        return courseService.getCoursesByCategory(categoryId, pageable, userId);
     }
 }

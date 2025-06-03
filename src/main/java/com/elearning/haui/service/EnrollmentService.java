@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.dto.CourseRepone;
 import com.elearning.haui.domain.entity.Chapters;
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.Enrollment;
@@ -25,36 +26,24 @@ public class EnrollmentService {
     return this.enrollmentRepository.findByUser_UserId(userId);
   }
 
-  // Ánh xạ từ Course sang CourseDTO
-  private CourseDTO mapToCourseDTO(Course course) {
-    //chapter
-    List<ChaptersDTO> listChapterDTO=new ArrayList<>();
-        for (Chapters c : course.getListChapters()) {
-            ChaptersDTO chapterDTO=new ChaptersDTO();
-            chapterDTO.setTitle(c.getTitle());
-            chapterDTO.setDescription(c.getDescription());
-            chapterDTO.setPosition(c.getPosition());
-            chapterDTO.setCreatedAt(c.getCreatedAt());
-            listChapterDTO.add(chapterDTO);
-
-        }
-    return new CourseDTO(
-        course.getCourseId(),
-        course.getName(),
-        course.getThumbnail(),
-        course.getDescription(),
-        course.getContents(),
-        course.getStar(),
-        course.getHour(),
-        course.getPrice(),
-        course.getSold(),
-        course.getAuthor().getName(),
-        listChapterDTO,
-        course.getCreatedAt());
+  // Ánh xạ từ Course sang CourseRepone
+  private CourseRepone mapToCourseDTO(Course course) {
+   return new CourseRepone(
+                course.getCourseId(),
+                course.getName(),
+                course.getThumbnail(),
+                course.getDescription(),
+                course.getContents(),
+                course.getStar(),
+                course.getHour(),
+                course.getPrice(),
+                course.getSold(),
+                course.getAuthor().getName(),
+                course.getCreatedAt());
   }
 
   // Lấy danh sách các khóa học mà người dùng đã tham gia và ánh xạ sang CourseDTO
-  public List<CourseDTO> getCoursesByUserId(Long userId) {
+  public List<CourseRepone> getCoursesByUserId(Long userId) {
     // Lấy tất cả các Enrollment của người dùng theo userId
     List<Enrollment> enrollments = this.enrollmentRepository.findByUser_UserId(userId);
 

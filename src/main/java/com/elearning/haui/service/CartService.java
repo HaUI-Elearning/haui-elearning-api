@@ -11,6 +11,7 @@ import com.elearning.haui.domain.dto.CartDTO;
 import com.elearning.haui.domain.dto.CartDetailDTO;
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.dto.CourseRepone;
 import com.elearning.haui.domain.entity.Cart;
 import com.elearning.haui.domain.entity.CartDetail;
 import com.elearning.haui.domain.entity.Chapters;
@@ -39,7 +40,7 @@ public class CartService {
         this.userRepository = userRepository;
     }
 
-    public CourseDTO addCourseToCart(String username, Long courseId, int quantity) {
+    public CourseRepone addCourseToCart(String username, Long courseId, int quantity) {
         // Lấy user từ username
         User user = userRepository.findByUsername(username);
         if (user == null) {
@@ -95,7 +96,7 @@ public class CartService {
             listChapterDTO.add(chapterDTO);
 
         }
-        return new CourseDTO(
+        return  new CourseRepone(
                 course.getCourseId(),
                 course.getName(),
                 course.getThumbnail(),
@@ -106,7 +107,6 @@ public class CartService {
                 course.getPrice(),
                 course.getSold(),
                 course.getAuthor().getName(),
-                listChapterDTO,
                 course.getCreatedAt());
     }
 

@@ -68,19 +68,8 @@ public class OrderService {
         this.orderRepository.delete(order);
     }
 
-    public CourseDTO convertToOrderDTO(Course course) {
-        //chapters
-        List<ChaptersDTO> listChapterDTO=new ArrayList<>();
-        for (Chapters c : course.getListChapters()) {
-            ChaptersDTO chapterDTO=new ChaptersDTO();
-            chapterDTO.setTitle(c.getTitle());
-            chapterDTO.setDescription(c.getDescription());
-            chapterDTO.setPosition(c.getPosition());
-            chapterDTO.setCreatedAt(c.getCreatedAt());
-            listChapterDTO.add(chapterDTO);
-
-        }
-        return new CourseDTO(
+    public CourseRepone  convertToOrderDTO(Course course) {
+        return new CourseRepone(
                 course.getCourseId(),
                 course.getName(),
                 course.getThumbnail(),
@@ -91,7 +80,6 @@ public class OrderService {
                 course.getPrice(),
                 course.getSold(),
                 course.getAuthor().getName(),
-                listChapterDTO,
                 course.getCreatedAt());
     }
 

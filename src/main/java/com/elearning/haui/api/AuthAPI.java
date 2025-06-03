@@ -11,15 +11,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.elearning.haui.domain.dto.LoginDTO;
+import com.elearning.haui.domain.entity.OtpToken;
 import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.domain.response.ResLoginDTO;
 import com.elearning.haui.repository.UserRepository;
+import com.elearning.haui.service.OtpService;
 import com.elearning.haui.utils.SecurityUtil;
 
 import jakarta.validation.Valid;
 
 @RestController
 public class AuthAPI {
+
+    @Autowired
+    OtpService otpService;
+
     @Autowired 
     UserRepository userrepository;
     private final SecurityUtil securityUtil;
@@ -42,9 +48,10 @@ public class AuthAPI {
         // Lấy user đã xác thực
        
         User user = userrepository.findByUsername(authentication.getName());
-
+        //String email=user.getEmail();
         // Kiểm tra xác thực email
         if (!user.isEmailVerified()) {
+            otpService.sendOtpEmail(user, "REGISTER");
             throw new Exception("user not verify");
         }
 

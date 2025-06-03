@@ -3,17 +3,20 @@ package com.elearning.haui.service;
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.dto.CourseSalesDTO;
+import com.elearning.haui.domain.dto.LessonsDTO;
 import com.elearning.haui.domain.dto.Meta;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
 import com.elearning.haui.domain.dto.ReviewDTO;
 import com.elearning.haui.domain.entity.Category;
 import com.elearning.haui.domain.entity.Chapters;
 import com.elearning.haui.domain.entity.Course;
+import com.elearning.haui.domain.entity.Lessons;
 import com.elearning.haui.domain.entity.Review;
 import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.repository.CategoryRepository;
 import com.elearning.haui.repository.CourseCategoryRepository;
 import com.elearning.haui.repository.CourseRepository;
+import com.elearning.haui.repository.EnrollmentRepository;
 import com.elearning.haui.repository.OrderDetailRepository;
 import com.elearning.haui.repository.ReviewRepository;
 import com.elearning.haui.repository.UserRepository;
@@ -28,13 +31,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,8 +49,11 @@ public class CourseService {
     private final CategoryRepository categoryRepository;
     private final CourseCategoryRepository courseCategoryRepository;
     private final OrderDetailRepository orderDetailRepository;
-    private final LocalDateTime now=LocalDateTime.now();
+    private final LocalDateTime now = LocalDateTime.now();
     private final UserRepository userRepository;
+
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
     ImgBBService imgBBService;
 
     public CourseService(ImgBBService imgBBService,
@@ -70,7 +79,7 @@ public class CourseService {
 
     public void deleteCourseById(Long id) {
         Course course = this.courseRepository.findById(id).orElse(null);
-        if(course == null) {
+        if (course == null) {
             throw new RuntimeException("Course not found");
         }
         this.courseRepository.delete(course);
@@ -91,7 +100,6 @@ public class CourseService {
 
         meta.setPage(pageCourses.getNumber() + 1);
         meta.setTotal(pageCourses.getTotalElements());
-
         meta.setPages(pageCourses.getTotalPages());
         meta.setTotal(pageCourses.getTotalElements());
 
@@ -101,216 +109,175 @@ public class CourseService {
                 .collect(Collectors.toList());
 
         rs.setResult(courseDTOs);
-
         return rs;
     }
 
     public CourseDTO convertToCourseDTO(Course course) {
-        //chapters
-        List<ChaptersDTO> listChapterDTO=new ArrayList<>();
-        for (Chapters c : course.getListChapters()) {
-            ChaptersDTO chapterDTO=new ChaptersDTO();
-            chapterDTO.setTitle(c.getTitle());
-            chapterDTO.setDescription(c.getDescription());
-            chapterDTO.setPosition(c.getPosition());
-            chapterDTO.setCreatedAt(c.getCreatedAt());
-            listChapterDTO.add(chapterDTO);
-
-        }
-        return new CourseDTO(
-                course.getCourseId(),
-                course.getName(),
-                course.getThumbnail(),
-                course.getDescription(),
-                course.getContents(),
-                course.getStar(),
-                course.getHour(),
-                course.getPrice(),
-                course.getSold(),
-                course.getAuthor().getName(),
-                listChapterDTO,
-                course.getCreatedAt());
+        return convertToCourseDTO(course, null);
     }
 
-    // đếm số lượng khoá học
+    public CourseDTO convertToCourseDTO(Course course, Long userId) {
+        if (course == null) {
+            throw new IllegalArgumentException("Course cannot be null");
+        }
+
+        Double timeCourse = 0.0;
+        List<ChaptersDTO> listChapterDTO = new ArrayList<>();
+        Set<Chapters> chapters = course.getListChapters();
+        if (chapters != null) {
+            for (Chapters c : chapters) {
+                ChaptersDTO chapterDTO = new ChaptersDTO();
+                chapterDTO.setTitle(c.getTitle());
+                chapterDTO.setDescription(c.getDescription());
+                chapterDTO.setPosition(c.getPosition());
+                chapterDTO.setCreatedAt(c.getCreatedAt());
+                
+                List<LessonsDTO> listLessonDTO = new ArrayList<>();
+                Set<Lessons> lessons = c.getListLessons();
+                if (lessons != null) {
+                    for (Lessons x : lessons) {
+                        LessonsDTO dto = new LessonsDTO();
+                        dto.setLessonId(x.getLessonId());
+                        dto.setPosition(x.getPosition());
+                        dto.setDurationVideo(x.getDuration());
+                        dto.setCreatedAt(x.getCreatedAt());
+                        dto.setTitle(x.getTitle());
+                        dto.setChapterId(c.getChapterId());
+                        dto.setCourseId(course.getCourseId());
+                        timeCourse += (x.getDuration() != null ? x.getDuration() : 0.0);
+                        listLessonDTO.add(dto);
+                    }
+                    listLessonDTO.sort(Comparator.comparing(LessonsDTO::getPosition));
+                }
+                chapterDTO.setListLessons(listLessonDTO);
+                listChapterDTO.add(chapterDTO);
+            }
+            listChapterDTO.sort(Comparator.comparing(ChaptersDTO::getPosition));
+        }
+
+        Double hoursCourse = timeCourse / 3600;
+        Double hour = Math.round(hoursCourse * 10) / 10.0;
+        boolean isEnrolled = (userId != null) ? enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(userId, course.getCourseId()) : false;
+
+        CourseDTO courseDTO = new CourseDTO(
+            course.getCourseId(),
+            course.getName(),
+            course.getThumbnail(),
+            course.getDescription(),
+            course.getContents(),
+            course.getStar(),
+            hour,
+            course.getPrice(),
+            course.getSold(),
+            (course.getAuthor() != null ? course.getAuthor().getName() : "Unknown"),
+            listChapterDTO,
+            course.getCreatedAt(),
+            isEnrolled
+        );
+        return courseDTO;
+    }
+
     public long countCours() {
         return this.courseRepository.count();
     }
 
-    // Lấy số lượng khóa học theo thể loại
     public Map<String, Integer> getCourseCountByCategory() {
-        // Lấy tất cả các thể loại từ cơ sở dữ liệu
         List<Category> categories = categoryRepository.findAll();
-
-        // Khởi tạo Map để lưu trữ số lượng khóa học theo thể loại
         Map<String, Integer> categoryCountMap = new HashMap<>();
-
-        // Duyệt qua các thể loại và đếm số lượng khóa học trong từng thể loại
         for (Category category : categories) {
-            long count = courseCategoryRepository.countByCategory(category); // Đếm số lượng khóa học thuộc thể loại này
-            categoryCountMap.put(category.getName(), (int) count); // Thêm vào Map
+            long count = courseCategoryRepository.countByCategory(category);
+            categoryCountMap.put(category.getName(), (int) count);
         }
-
-        // Trả về Map chứa thông tin số lượng khóa học theo thể loại
         return categoryCountMap;
     }
 
-    // Lấy danh sách khóa học bán nhiều nhất
     public List<CourseSalesDTO> getTopSellingCourses() {
         return orderDetailRepository.findTopSellingCourses();
     }
 
-    // Phương thức lấy danh sách khóa học theo categoryId và giới hạn số lượng kết
-    // quả
-    public ResultPaginationDTO getCoursesByCategory(Long categoryId, Pageable pageable) {
-        // Lấy tất cả khóa học theo categoryId từ repository
+    public ResultPaginationDTO getCoursesByCategory(Long categoryId, Pageable pageable, Long userId) {
         List<Course> allCourses = courseRepository.findCoursesByCategory(categoryId);
-
-        return PaginationUtils.paginate(allCourses, pageable, this::convertToCourseDTO);
+        return PaginationUtils.paginate(allCourses, pageable, course -> convertToCourseDTO(course, userId));
     }
 
-    public List<CourseDTO> getCoursesByCategoryWithLimit(Long categoryId) {
+    public List<CourseDTO> getCoursesByCategoryWithLimit(Long categoryId, Long userId) {
         List<Course> limitedCourses = courseRepository.findCoursesByCategory(categoryId);
-
-        // Shuffle và chọn ngẫu nhiên `limit` khóa học
         Collections.shuffle(limitedCourses);
         List<Course> randomCourses = limitedCourses.stream()
                 .limit(10)
                 .collect(Collectors.toList());
-
-        // Ánh xạ sang CourseDTO
         return randomCourses.stream()
-                .map(this::convertToCourseDTO)
+                .map(course -> convertToCourseDTO(course, userId))
                 .collect(Collectors.toList());
     }
 
-    // Xem chi tiết một khoá học ở phía clients
-    public CourseDTO getCourseDetail(Long courseId) {
-        // Tìm khóa học theo ID
+    public CourseDTO getCourseDetail(Long courseId, Long userId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
-
-        // Ánh xạ sang DTO
-        return convertToCourseDTO(course);
+        return convertToCourseDTO(course, userId);
     }
 
-    // search course
-    public ResultPaginationDTO getCourses(String hourRange, Double minPrice, Double maxPrice, Boolean isPaid,
-            String starRating, String categoryId, Pageable pageable) {
-        // Lấy toàn bộ danh sách các khóa học từ cơ sở dữ liệu
-        List<Course> allCourses = null;
-        if (categoryId == null) {
-            allCourses = courseRepository.findAll();
-        } else {
-            allCourses = courseRepository.findCoursesByCategory(Long.parseLong(categoryId));
-        }
+    public CourseDTO getCourseDetail(Long courseId) {
+        return getCourseDetail(courseId, null);
+    }
 
-        // Lọc theo giờ (chỉ lọc nếu hourRange không phải null)
+    public ResultPaginationDTO getCourses(String hourRange, Double minPrice, Double maxPrice, Boolean isPaid,
+            String starRating, String categoryId, Pageable pageable, Long userId) {
+        List<Course> allCourses = (categoryId == null) ? courseRepository.findAll() : courseRepository.findCoursesByCategory(Long.parseLong(categoryId));
+
         if (hourRange != null && !hourRange.isEmpty()) {
             allCourses = filterByHourRange(allCourses, hourRange);
         }
-
-        // Lọc theo giá nếu có
         if (minPrice != null && maxPrice != null) {
             allCourses = filterByPrice(allCourses, minPrice, maxPrice);
         }
-
-        // Lọc theo starRating
         if (starRating != null) {
             allCourses = filterByStarRating(allCourses, starRating);
         }
-
-        // Lọc theo paid/free
         if (isPaid != null) {
             allCourses = filterByPaidStatus(allCourses, isPaid);
         }
 
-        // Sử dụng PaginationUtils để phân trang
-        return PaginationUtils.paginate(allCourses, pageable, this::convertToCourseDTO);
+        return PaginationUtils.paginate(allCourses, pageable, course -> convertToCourseDTO(course, userId));
     }
 
-    // Lọc theo khoảng giờ
     private List<Course> filterByHourRange(List<Course> courses, String hourRange) {
         switch (hourRange) {
-            case "3-6":
-                return courses.stream()
-                        .filter(course -> course.getHour() >= 3 && course.getHour() < 6)
-                        .collect(Collectors.toList());
-            case "6-9":
-                return courses.stream()
-                        .filter(course -> course.getHour() >= 6 && course.getHour() < 9)
-                        .collect(Collectors.toList());
-            case "9-12":
-                return courses.stream()
-                        .filter(course -> course.getHour() >= 9 && course.getHour() < 12)
-                        .collect(Collectors.toList());
-            case "more":
-                return courses.stream()
-                        .filter(course -> course.getHour() >= 12)
-                        .collect(Collectors.toList());
-            default:
-                return courses;
+            case "3-6": return courses.stream().filter(course -> course.getHour() >= 3 && course.getHour() < 6).collect(Collectors.toList());
+            case "6-9": return courses.stream().filter(course -> course.getHour() >= 6 && course.getHour() < 9).collect(Collectors.toList());
+            case "9-12": return courses.stream().filter(course -> course.getHour() >= 9 && course.getHour() < 12).collect(Collectors.toList());
+            case "more": return courses.stream().filter(course -> course.getHour() >= 12).collect(Collectors.toList());
+            default: return courses;
         }
     }
 
-    // Lọc theo giá
     private List<Course> filterByPrice(List<Course> courses, double minPrice, double maxPrice) {
-        return courses.stream()
-                .filter(course -> course.getPrice() >= minPrice && course.getPrice() <= maxPrice)
-                .toList();
+        return courses.stream().filter(course -> course.getPrice() >= minPrice && course.getPrice() <= maxPrice).toList();
     }
 
-    // Lọc theo star rating
     private List<Course> filterByStarRating(List<Course> courses, String starRating) {
         switch (starRating) {
-            case ">=3":
-                return courses.stream()
-                        .filter(course -> course.getStar() >= 3)
-                        .toList();
-            case ">=4":
-                return courses.stream()
-                        .filter(course -> course.getStar() >= 4)
-                        .toList();
-            case "5":
-                return courses.stream()
-                        .filter(course -> course.getStar() == 5)
-                        .toList();
-            default:
-                return courses;
+            case ">=3": return courses.stream().filter(course -> course.getStar() >= 3).toList();
+            case ">=4": return courses.stream().filter(course -> course.getStar() >= 4).toList();
+            case "5": return courses.stream().filter(course -> course.getStar() == 5).toList();
+            default: return courses;
         }
     }
 
-    // Lọc theo paid/free
     private List<Course> filterByPaidStatus(List<Course> courses, boolean isPaid) {
-        if (isPaid) {
-            return courses.stream()
-                    .filter(course -> course.getPrice() > 0)
-                    .toList();
-        } else {
-            return courses.stream()
-                    .filter(course -> course.getPrice() == 0)
-                    .toList();
-        }
+        return isPaid ? courses.stream().filter(course -> course.getPrice() > 0).toList() : courses.stream().filter(course -> course.getPrice() == 0).toList();
     }
 
-    public CourseDTO CreateCourse(
-            String username
-            , String content
-            , String Description
-            , String name
-            , Double hour
-            , Double price
-            , MultipartFile file
-    ){
-        User user=userRepository.findByUsername(username);
-        if(user==null){
+    public CourseDTO CreateCourse(String username, String content, String description, String name, Double hour, Double price, MultipartFile file) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
             throw new RuntimeException("User not found");
         }
-        Course course=new Course();
+        Course course = new Course();
         course.setAuthor(user);
         course.setContents(content);
         course.setCreatedAt(now);
-        course.setDescription(Description);
+        course.setDescription(description);
         course.setHour(hour);
         course.setName(name);
         course.setPrice(price);
@@ -321,47 +288,37 @@ public class CourseService {
         }
         course.setSold(0);
         courseRepository.save(course);
-        CourseDTO courseDTO= convertToCourseDTO(course);
-        return courseDTO;
+        return convertToCourseDTO(course);
     }
 
-    //update course
     public CourseDTO updateCourse(long id, String courseName, String description, String content, String author, double hour, double price, MultipartFile file) {
         Course course = courseRepository.findById(id).orElse(null);
         if (course == null) {
             throw new RuntimeException("Course not found");
         }
-
-        // Cập nhật thông tin cơ bản
         course.setName(courseName);
         course.setDescription(description);
         course.setContents(content);
         course.setHour(hour);
         course.setPrice(price);
-
-        // Cập nhật tác giả nếu cần
         User user = userRepository.findByName(author);
         if (user == null) {
             User userNew = new User();
             userNew.setUsername(author.replace(" ", ""));
             userNew.setName(author);
-            userNew.setEmail(author.replace(" ", "") + "@gmail.com"); // hoặc email mặc định
+            userNew.setEmail(author.replace(" ", "") + "@gmail.com");
             userNew.setPassword("123456");
             userNew.setEmailVerified(true);
             user = userRepository.save(userNew);
         }
         course.setAuthor(user);
-
-        // Cập nhật ảnh nếu có file mới
         if (file != null && !file.isEmpty()) {
             String imageUrl = imgBBService.checkAndUploadImage(file);
             if (imageUrl != null) {
                 course.setThumbnail(imageUrl);
             }
         }
-
         courseRepository.save(course);
-
         return convertToCourseDTO(course);
     }
 }
