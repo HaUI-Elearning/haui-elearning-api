@@ -1,20 +1,15 @@
 package com.elearning.haui.domain.dto;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class CourseDTO {
+@AllArgsConstructor
+public class CourseRepone {
     private Long courseId;
     private String name;
     private String thumbnail;
@@ -25,8 +20,6 @@ public class CourseDTO {
     private double price;
     private int sold;
     private String author;
-    private List<ChaptersDTO> chapters;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
-    private boolean isEnrolled=false;
 }

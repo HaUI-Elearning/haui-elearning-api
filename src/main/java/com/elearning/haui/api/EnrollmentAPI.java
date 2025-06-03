@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.dto.CourseRepone;
 import com.elearning.haui.service.EnrollmentService;
 
 import java.util.List;
@@ -20,8 +21,8 @@ public class EnrollmentAPI {
     private EnrollmentService enrollmentService;
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CourseDTO>> getCoursesUserIsEnrolledIn(@PathVariable Long userId) {
-        List<CourseDTO> courses = enrollmentService.getCoursesByUserId(userId);
+    public ResponseEntity<List<CourseRepone>> getCoursesUserIsEnrolledIn(@PathVariable Long userId) {
+        List<CourseRepone> courses = enrollmentService.getCoursesByUserId(userId);
         return ResponseEntity.ok(courses);
     }
 }
