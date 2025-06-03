@@ -84,12 +84,12 @@ public class SecurityConfiguration {
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http,
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
-                .securityMatcher("/api/v1/**") // Áp dụng cho các URL /api/v1/**
+                .securityMatcher("/edu-api/**") // Áp dụng cho các URL /api/v1/**
                 .csrf(csrf -> csrf.disable()) // CSRF không cần thiết cho API
                 .authorizeHttpRequests(authz -> authz
                         // Cho phép Swagger UI truy cập public
                         .requestMatchers(
-                                "/api/v1/login",
+                                "/edu-api/login",
                                 "/api/v1/register",
                                 "/api/v1/courses/**",
                                 "/api/v1/categories/**",
@@ -101,7 +101,7 @@ public class SecurityConfiguration {
                                 "/api/v1/verify-forgot-password-otp",
                                 "/api/v1/forgot-password/reset",
                                 "/api/v1/resend-forgot-password-otp",
-                
+                                "/edu-api/signUp",
                                 // Swagger OpenAPI
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",

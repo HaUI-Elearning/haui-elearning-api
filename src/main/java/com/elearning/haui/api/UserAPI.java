@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/edu-api")
 public class UserAPI {
     @Autowired
     OtpService otpService;
@@ -58,14 +58,15 @@ public class UserAPI {
         this.roleService = roleService;
     }
 
-    @PostMapping("/register")
+    @PostMapping("/signUp")
     public ResponseEntity<RestResponse<User>> register(@Valid @RequestBody RegisterDTO registerDTO) throws Exception {
-        if (userService.checkEmailExist(registerDTO.getEmail())) {
-            throw new Exception("Email already exists.");
-        }
         if (userService.checkUsernameExist(registerDTO.getUsername())) {
             throw new Exception("Username already exists.");
         }
+        if (userService.checkEmailExist(registerDTO.getEmail())) {
+            throw new Exception("Email already exists.");
+        }
+        
         if (!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())) {
             throw new Exception("Passwords do not match.");
         }

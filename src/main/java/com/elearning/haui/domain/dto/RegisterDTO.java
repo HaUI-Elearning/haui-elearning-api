@@ -1,6 +1,6 @@
 package com.elearning.haui.domain.dto;
 
-import com.elearning.haui.service.validator.RegisterChecked;
+
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,6 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@RegisterChecked
 public class RegisterDTO {
     @NotBlank(message = "Username is required")
     @Size(min = 6, max = 20, message = "Username must be between 6 and 20 characters")
@@ -27,9 +26,10 @@ public class RegisterDTO {
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 30, message = "Password must be between 8 and 30 characters")
     @Pattern(
-        regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).+$",
-        message = "Password must contain uppercase, lowercase, number, and special character"
-    )
+    regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=!])[^\\s]{8,30}$",
+    message = "Password must contain uppercase, lowercase, number, special character, and must not contain spaces"
+)
+
     private String password;
 
     @NotBlank(message = "Confirm password is required")
