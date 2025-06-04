@@ -48,7 +48,8 @@ public class AuthAPI {
         // Lấy user đã xác thực
        
         User user = userrepository.findByUsername(authentication.getName());
-        //String email=user.getEmail();
+        
+        
         // Kiểm tra xác thực email
         if (!user.isEmailVerified()) {
             otpService.sendOtpEmail(user, "REGISTER");

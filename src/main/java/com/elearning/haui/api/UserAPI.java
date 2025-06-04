@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
 import com.elearning.haui.domain.dto.UserDetailsDTO;
@@ -29,6 +30,7 @@ import com.elearning.haui.domain.request.UpdateUserProfileRequest;
 import com.elearning.haui.domain.response.RestResponse;
 import com.elearning.haui.exception.IdInvalidException;
 import com.elearning.haui.repository.OtpTokenRepository;
+import com.elearning.haui.service.CourseService;
 import com.elearning.haui.service.OtpService;
 import com.elearning.haui.service.RoleService;
 import com.elearning.haui.service.UserDetailsService;
@@ -44,6 +46,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/api/v1")
 public class UserAPI {
+
+    @Autowired
+    CourseService courseService;
+
     @Autowired
     OtpService otpService;
     @Autowired
@@ -295,6 +301,16 @@ public class UserAPI {
                         null,
                         "Successfully deleted user",
                         null));
+    }
+
+    // start learning course
+    @GetMapping("/learn/{courseId}")
+    public ResponseEntity<?> learnCourseByUser(
+    Authentication authentication,
+    @PathVariable("courseId") Long courseId)
+    {
+        CourseDTO Resuilt=courseService.getCourseByUser(courseId,authentication.getName());
+        return ResponseEntity.ok(Resuilt);
     }
 
 }

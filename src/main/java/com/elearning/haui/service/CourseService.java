@@ -43,6 +43,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.management.RuntimeErrorException;
+
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
@@ -320,5 +322,74 @@ public class CourseService {
         }
         courseRepository.save(course);
         return convertToCourseDTO(course);
+    }
+
+    //get detaill course by User
+    public CourseDTO getCourseByUser(Long courseId,String username) 
+    {
+        Course course=courseRepository.findCourseByCourseId(courseId);
+        if(course==null){
+            throw new RuntimeException("Course not found");
+        }
+        User user=userRepository.findByUsername(username);
+        if(user==null){
+            throw new RuntimeException("User not found");
+        }
+        boolean isEnrolled=enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(user.getUserId(),courseId);
+        if (!isEnrolled) {
+            throw new RuntimeException("User has not enrolled in this course");
+        }
+        Double timeCourse = 0.0;
+        List<ChaptersDTO> listChapterDTO = new ArrayList<>();
+        Set<Chapters> chapters = course.getListChapters();
+        if (chapters != null) {
+            for (Chapters c : chapters) {
+                ChaptersDTO chapterDTO = new ChaptersDTO();
+                chapterDTO.setTitle(c.getTitle());
+                chapterDTO.setDescription(c.getDescription());
+                chapterDTO.setPosition(c.getPosition());
+                chapterDTO.setCreatedAt(c.getCreatedAt());
+                List<LessonsDTO> listLessonDTO = new ArrayList<>();
+                Set<Lessons> lessons = c.getListLessons();
+                if (lessons != null) {
+                    for (Lessons x : lessons) {
+                        LessonsDTO dto = new LessonsDTO();
+                        dto.setPdfURL(x.getPdfUrl());
+                        dto.setVideoURL(x.getVideoUrl());
+                        dto.setLessonId(x.getLessonId());
+                        dto.setPosition(x.getPosition());
+                        dto.setDurationVideo(x.getDuration());
+                        dto.setCreatedAt(x.getCreatedAt());
+                        dto.setTitle(x.getTitle());
+                        dto.setChapterId(c.getChapterId());
+                        dto.setCourseId(course.getCourseId());
+                        timeCourse += (x.getDuration() != null ? x.getDuration() : 0.0);
+                        listLessonDTO.add(dto);
+                    }
+                    listLessonDTO.sort(Comparator.comparing(LessonsDTO::getPosition));
+                }
+                chapterDTO.setListLessons(listLessonDTO);
+                listChapterDTO.add(chapterDTO);
+            }
+            listChapterDTO.sort(Comparator.comparing(ChaptersDTO::getPosition));
+        }
+        Double hoursCourse = timeCourse / 3600;
+        Double hour = Math.round(hoursCourse * 10) / 10.0;
+        return new CourseDTO(
+            course.getCourseId(),
+            course.getName(),
+            course.getThumbnail(),
+            course.getDescription(),
+            course.getContents(),
+            course.getStar(),
+            hour,
+            course.getPrice(),
+            course.getSold(),
+            (course.getAuthor() != null ? course.getAuthor().getName() : "Unknown"),
+            listChapterDTO,
+            course.getCreatedAt(),
+            isEnrolled
+        );
+
     }
 }

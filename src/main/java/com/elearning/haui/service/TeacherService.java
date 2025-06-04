@@ -13,15 +13,26 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.entity.Category;
 import com.elearning.haui.domain.entity.Chapters;
 import com.elearning.haui.domain.entity.Course;
+import com.elearning.haui.domain.entity.CourseCategory;
 import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.repository.CategoryRepository;
+import com.elearning.haui.repository.CourseCategoryRepository;
 import com.elearning.haui.repository.CourseRepository;
 import com.elearning.haui.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 @Service
 public class TeacherService {
+
+    @Autowired
+    CourseCategoryRepository courseCategoryRepository ;
+
+    @Autowired
+    CategoryRepository categoryRepository;
+
     @Autowired
     CourseRepository courseRepository;
     private final LocalDateTime now=LocalDateTime.now();
@@ -111,13 +122,18 @@ public class TeacherService {
     }
     //Create Coure by Teacher
     public CourseDTO CreateCourseByTeacher(
-        String username
+        Long categoryId
+       ,String username
        ,String content
        ,String Description
        ,String name
        ,Double price
        ,MultipartFile file
        ){
+        Category category=categoryRepository.findByCategoryId(categoryId);
+        if(category==null){
+            throw new RuntimeException ("Category not found");
+        }
         User user=userRepository.findByUsername(username);
         if(user==null){
             throw new RuntimeException("User not found");
@@ -137,6 +153,10 @@ public class TeacherService {
         }
         course.setSold(0);
         courseRepository.save(course);
+        CourseCategory courseCategory=new CourseCategory();
+        courseCategory.setCourse(course);
+        courseCategory.setCategory(category);
+        courseCategoryRepository.save(courseCategory);
         CourseDTO courseDTO= mapCourseToDTO(course);
         return courseDTO;
     }
