@@ -56,9 +56,10 @@ public class TeacherAPI {
        ,@RequestParam String Description
        ,@RequestParam String name
        ,@RequestParam Double price
-       ,@RequestParam MultipartFile file)
+       ,@RequestParam MultipartFile file,
+       @RequestParam Long categoryId)
     {
-        CourseDTO result=teacherService.CreateCourseByTeacher(authentication.getName(), content, Description, name, price, file);
+        CourseDTO result=teacherService.CreateCourseByTeacher(categoryId,authentication.getName(), content, Description, name, price, file);
         return ResponseEntity.ok(result);
     }
     //Update Course By Teacher
