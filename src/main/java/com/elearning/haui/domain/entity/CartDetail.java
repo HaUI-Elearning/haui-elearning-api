@@ -17,15 +17,13 @@ public class CartDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long cartDetailId;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
-
-    private int quantity;
-
+    @Column(name = "price_at_add")
     private Double price;
 }

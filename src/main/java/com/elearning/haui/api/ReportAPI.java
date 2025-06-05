@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.elearning.haui.domain.dto.CourseSalesDTO;
@@ -58,14 +59,15 @@ public class ReportAPI {
     }
 
     // Trả về danh sách khóa học bán chạy
-    @GetMapping("/sales/top-selling-courses")
-    public ResponseEntity<List<CourseSalesDTO>> getTopSellingCourses() {
-        List<CourseSalesDTO> topSellingCourses = salesReportService.getTopSellingCourses();
+   @GetMapping("/sales/top-selling-courses")
+public ResponseEntity<List<CourseSalesDTO>> getTopSellingCourses(
+        @RequestParam(required = false, defaultValue = "10") int limit) {
+    List<CourseSalesDTO> topSellingCourses = salesReportService.getTopSellingCourses(limit);
 
-        if (topSellingCourses.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(topSellingCourses);
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(topSellingCourses); // Trả về danh sách khóa học bán chạy
+    if (topSellingCourses.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    return ResponseEntity.ok(topSellingCourses);
+}
 }

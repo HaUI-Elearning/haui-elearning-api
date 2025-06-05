@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.elearning.haui.domain.dto.CartDTO;
@@ -27,20 +28,41 @@ import jakarta.transaction.Transactional;
 @Service
 public class CartService {
 
-    private final CartRepository cartRepository;
-    private final CartDetailRepository cartDetailRepository;
-    private final CourseRepository courseRepository;
-    private final UserRepository userRepository;
+    @Autowired
+    CartRepository cartRepository;
+    @Autowired
+    CartDetailRepository cartDetailRepository;
+    @Autowired
+    CourseRepository courseRepository;
+    @Autowired
+    UserRepository userRepository;
+    public CartDTO mapperCartToDTO (Cart cart){
+        CartDTO dto=new CartDTO();
+        dto.setCartId(cart.getCartId());
+        Double totalprice=0.0;
+        int count=0;
+        List<CartDetailDTO> listCartDetailDTO=new ArrayList<>();
+        for(CartDetail detail : cart.getCartDetails()){
+            CartDetailDTO cartDetailDTO=new CartDetailDTO();
+            cartDetailDTO.setCourseId(detail.getCourse().getCourseId());
+            cartDetailDTO.setCourseName(detail.getCourse().getName());
+            cartDetailDTO.setCourseThumbnail(detail.getCourse().getThumbnail());
+            cartDetailDTO.setPrice(detail.getCourse().getPrice());
+            cartDetailDTO.setAuthor(detail.getCourse().getAuthor().getName());
+            cartDetailDTO.setHourse(detail.getCourse().getHour());
+            cartDetailDTO.setStar(detail.getCourse().getStar());
+            listCartDetailDTO.add(cartDetailDTO);
+            totalprice+=detail.getPrice();
+            count++;
+        }
+        dto.setTotalPrice(totalprice);
+        dto.setQuantity(count);
+        dto.setCartDetails(listCartDetailDTO);
+        return dto;
 
-    public CartService(CartRepository cartRepository, CartDetailRepository cartDetailRepository,
-            CourseRepository courseRepository, UserRepository userRepository) {
-        this.cartRepository = cartRepository;
-        this.cartDetailRepository = cartDetailRepository;
-        this.courseRepository = courseRepository;
-        this.userRepository = userRepository;
     }
 
-    public CourseRepone addCourseToCart(String username, Long courseId, int quantity) {
+    public CartDTO addCourseToCart(String username, Long courseId) {
         // Lấy user từ username
         User user = userRepository.findByUsername(username);
         if (user == null) {
@@ -56,16 +78,10 @@ public class CartService {
 
         if (cart == null) {
             // Tạo giỏ hàng mới nếu chưa có
-            cart = new Cart(user);
-            cart.setQuantity(0);
-            cart.setTotalPrice(0.0);
-            cartRepository.save(cart); // Lưu giỏ hàng mới vào cơ sở dữ liệu
-        }
-
-        // Khởi tạo danh sách nếu chưa có (không cần thiết nếu đã khởi tạo trong lớp
-        // Cart)
-        if (cart.getCartDetails() == null) {
-            cart.setCartDetails(new ArrayList<>());
+            cart = new Cart();
+            cart.setUser(user);
+            cart.setCreatedAt(LocalDateTime.now());
+            cartRepository.save(cart); 
         }
 
         // Kiểm tra chi tiết giỏ hàng (CartDetail)
@@ -77,37 +93,12 @@ public class CartService {
             CartDetail newCartDetail = new CartDetail();
             newCartDetail.setCart(cart);
             newCartDetail.setCourse(course);
-            newCartDetail.setQuantity(quantity); // Cập nhật theo số lượng mong muốn
             newCartDetail.setPrice(course.getPrice()); // Lưu giá của khóa học
-
             cartDetailRepository.save(newCartDetail);
         }
-
-        // Cập nhật lại tổng số lượng và tổng giá trị của Cart
-        updateCart(cart);
-        //get chapter
-        List<ChaptersDTO> listChapterDTO=new ArrayList<>();
-        for (Chapters c : course.getListChapters()) {
-            ChaptersDTO chapterDTO=new ChaptersDTO();
-            chapterDTO.setTitle(c.getTitle());
-            chapterDTO.setDescription(c.getDescription());
-            chapterDTO.setPosition(c.getPosition());
-            chapterDTO.setCreatedAt(c.getCreatedAt());
-            listChapterDTO.add(chapterDTO);
-
-        }
-        return  new CourseRepone(
-                course.getCourseId(),
-                course.getName(),
-                course.getThumbnail(),
-                course.getDescription(),
-                course.getContents(),
-                course.getStar(),
-                course.getHour(),
-                course.getPrice(),
-                course.getSold(),
-                course.getAuthor().getName(),
-                course.getCreatedAt());
+        CartDTO dto= mapperCartToDTO(cart);
+        return dto;
+        
     }
 
     public CartDTO getCartDetails(String username) {
@@ -127,17 +118,8 @@ public class CartService {
         }
 
         // Lấy danh sách các CartDetail liên quan đến Cart
-        List<CartDetailDTO> cartDetails = cart.getCartDetails().stream()
-                .map(cd -> new CartDetailDTO(
-                        cd.getCourse().getCourseId(),
-                        cd.getCourse().getName(),
-                        cd.getCourse().getThumbnail(),
-                        cd.getQuantity(),
-                        cd.getPrice()))
-                .collect(Collectors.toList());
-
-        // Trả về DTO chứa thông tin giỏ hàng và chi tiết giỏ hàng
-        return new CartDTO(cart.getCartId(), cart.getQuantity(), cart.getTotalPrice(), cartDetails);
+         CartDTO dto= mapperCartToDTO(cart);
+        return dto;
     }
 
     @Transactional
@@ -154,8 +136,6 @@ public class CartService {
 
         // Xoá cartDetail
         if (cartDetailRepository.deleteByUserIdAndCourseId(user.getUserId(), courseId) > 0) {
-            updateCart(cart);
-
             // Kiểm tra xem giỏ hàng còn món nào không
             if (cart.getCartDetails().isEmpty()) {
                 // Nếu giỏ hàng không còn gì, có thể xóa Cart hoặc cập nhật trạng thái giỏ hàng
@@ -166,15 +146,9 @@ public class CartService {
         return false;
     }
 
-    private void updateCart(Cart cart) {
-        // Cập nhật lại tổng giá trị giỏ hàng sau khi xóa một CartDetail
-        double totalPrice = 0;
-
-        for (CartDetail cartDetail : cart.getCartDetails()) {
-            totalPrice += cartDetail.getPrice() * cartDetail.getQuantity();
-        }
-        cart.setTotalPrice(totalPrice);
-        cart.setQuantity(cart.getCartDetails().size());
-        cartRepository.save(cart); // Lưu lại giỏ hàng đã được cập nhật
+    @Transactional
+    public void removeCartDetailsByCartAndCourseIds(Long cartId, List<Long> courseIds) {
+        cartDetailRepository.deleteByCart_CartIdAndCourse_CourseIdIn(cartId, courseIds);
     }
+
 }

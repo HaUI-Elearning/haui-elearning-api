@@ -38,8 +38,8 @@ public class StatisticsService {
         stats.put("totalRevenue", formattedRevenue != null ? formattedRevenue : 0.0);
 
         // Lấy số lượng đơn thanh toán
-        long completedOrders = orderRepository.countByStatus(OrderStatus.COMPLETED);
-        stats.put("totalCompletedOrders", completedOrders);
+       // long completedOrders = orderRepository.countByStatus(OrderStatus.COMPLETED);
+        //stats.put("totalCompletedOrders", completedOrders);
 
         // Lấy số lượng đơn hàng
         long totalOrders = orderRepository.count();

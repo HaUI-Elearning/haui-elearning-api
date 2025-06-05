@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -17,8 +18,7 @@ public class OrderDTO {
     private  long orderId;
     private  String userName;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private Timestamp orderDate;
-    private OrderStatus orderStatus;
-    private Long totalAmount;
-    private String paymentMethod;
+    private LocalDateTime orderDate;
+    private String orderStatus;
+    private Double totalAmount;
 }

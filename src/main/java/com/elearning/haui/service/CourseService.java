@@ -193,9 +193,9 @@ public class CourseService {
         return categoryCountMap;
     }
 
-    public List<CourseSalesDTO> getTopSellingCourses() {
-        return orderDetailRepository.findTopSellingCourses();
-    }
+    // public List<CourseSalesDTO> getTopSellingCourses() {
+    //     return orderDetailRepository.findTopSellingCourses();
+    // }
 
     public ResultPaginationDTO getCoursesByCategory(Long categoryId, Pageable pageable, Long userId) {
         List<Course> allCourses = courseRepository.findCoursesByCategory(categoryId);
@@ -283,7 +283,7 @@ public class CourseService {
         course.setHour(hour);
         course.setName(name);
         course.setPrice(price);
-        course.setStar(0);
+        course.setStar(0.0);
         String imageUrl = imgBBService.checkAndUploadImage(file);
         if (imageUrl != null) {
             course.setThumbnail(imageUrl);

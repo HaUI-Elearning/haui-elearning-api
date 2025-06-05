@@ -11,6 +11,7 @@ import com.elearning.haui.repository.OrderRepository;
 
 import jakarta.transaction.Transactional;
 import org.aspectj.weaver.ast.Or;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,13 +26,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
-    private final OrderRepository orderRepository;
-    private final OrderDetailRepository orderDetailRepository;
-
-    public OrderService(OrderRepository orderRepository, OrderDetailRepository orderDetailRepository) {
-        this.orderRepository = orderRepository;
-        this.orderDetailRepository = orderDetailRepository;
-    }
+    @Autowired
+    OrderRepository orderRepository;
+    @Autowired
+    OrderDetailRepository orderDetailRepository;
 
     public Page<Order> findPaginated(PageRequest pageRequest) {
         return orderRepository.findAll(pageRequest);
@@ -44,7 +42,7 @@ public class OrderService {
     public Order getOrderById(Long id) { return this.orderRepository.findByOrderId(id); }
 
     public OrderDTO getOrderDTOById(Long id) {
-        Order order = this.orderRepository.findById(id).orElse(null);
+        Order order = orderRepository.findById(id).orElse(null);
         if (order == null) {
             throw new RuntimeException("Order not found");
         }
@@ -105,14 +103,13 @@ public class OrderService {
     }
 
     public OrderDTO convertToOrderDTO(Order order) {
-        return new OrderDTO(
-          order.getOrderId(),
-          order.getUser().getName(),
-          order.getCreatedAt(),
-          order.getStatus(),
-          order.getTotalAmount(),
-          order.getPaymentMethod()
-        );
+        OrderDTO dto = new OrderDTO();
+        dto.setOrderId(order.getOrderId());
+        dto.setUserName(order.getUser().getName());
+        dto.setOrderDate(order.getCreatedAt());
+        dto.setOrderStatus(order.getStatus());
+        dto.setTotalAmount(order.getTotalAmount());
+        return dto;
     }
 
     @Transactional
@@ -121,9 +118,8 @@ public class OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
         try {
-            OrderStatus newStatus = OrderStatus.valueOf(status.toUpperCase());
+            String newStatus =status.toUpperCase();
             order.setStatus(newStatus);
-            order.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             orderRepository.save(order);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status value");

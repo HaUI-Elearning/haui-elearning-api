@@ -1,5 +1,6 @@
 package com.elearning.haui.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +19,6 @@ public interface CartDetailRepository extends JpaRepository<CartDetail, Long> {
     @Modifying
     @Query("DELETE FROM CartDetail cd WHERE cd.cart.user.id = :userId AND cd.course.id = :courseId")
     int deleteByUserIdAndCourseId(Long userId, Long courseId);
+    @Modifying
+    void deleteByCart_CartIdAndCourse_CourseIdIn(Long cartId, List<Long> courseIds);
 }

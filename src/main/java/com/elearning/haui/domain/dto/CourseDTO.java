@@ -20,7 +20,7 @@ public class CourseDTO {
     private String thumbnail;
     private String description;
     private String contents;
-    private float star;
+    private Double star;
     private Double hour;
     private double price;
     private int sold;

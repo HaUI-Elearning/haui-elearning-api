@@ -101,7 +101,7 @@ public class SecurityConfiguration {
                                 "/api/v1/verify-forgot-password-otp",
                                 "/api/v1/forgot-password/reset",
                                 "/api/v1/resend-forgot-password-otp",
-                
+                                "/api/v1/payment/**",
                                 // Swagger OpenAPI
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",

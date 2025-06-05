@@ -22,8 +22,6 @@ public class OrderDetail {
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
-
-    private int quantity;
-
+    @Column(name = "price_at_order")
     private Double price;
 }

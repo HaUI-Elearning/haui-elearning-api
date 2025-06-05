@@ -70,6 +70,10 @@ public class ReviewService {
     public ReviewRestpone getAllReview(Long CourseId){
         Double aveRating=AVGRatting(CourseId);
         List<Review> list=reviewRepository.findReviewsByCourseId(CourseId);
+        if(list.isEmpty())
+        {
+            throw new RuntimeException("Course not have reviews");
+        }
         List<ReviewDTO> listDTO=new ArrayList<>();
         mapperReviewDTO(list,listDTO);
         ReviewRestpone rs=new ReviewRestpone(aveRating, listDTO);
@@ -95,6 +99,8 @@ public class ReviewService {
         rv.setComment(Comment);
         rv.setCreatedAt(LocalDateTime.now());
         reviewRepository.save(rv);
+        course.setStar(AVGRatting(course.getCourseId()));
+        courseRepository.save(course);
         ReviewDTO dto=mapReviewToDTO(rv);
         return dto;
 
