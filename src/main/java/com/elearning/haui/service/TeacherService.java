@@ -135,6 +135,7 @@ public class TeacherService {
             throw new RuntimeException ("Category not found");
         }
         User user=userRepository.findByUsername(username);
+        System.out.println(user.getName());
         if(user==null){
             throw new RuntimeException("User not found");
         }
@@ -146,7 +147,7 @@ public class TeacherService {
         course.setHour(0.0);
         course.setName(name);
         course.setPrice(price);
-        course.setStar(0);
+        course.setStar(0.0);
         String imageUrl = imgBBService.checkAndUploadImage(file);
         if (imageUrl != null) {
             course.setThumbnail(imageUrl);

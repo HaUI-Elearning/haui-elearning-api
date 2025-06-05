@@ -5,10 +5,12 @@ import com.elearning.haui.domain.dto.FavoriteCourseDTO;
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.FavoriteCourse;
 import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.repository.FavoriteCourseRepository;
 import com.elearning.haui.service.CourseService;
 import com.elearning.haui.service.FavoriteCourseService;
 import com.elearning.haui.service.UserService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,17 +21,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/favorite-courses")
 public class FavoriteCourseAPI {
+    @Autowired
+    FavoriteCourseService favoriteCourseService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    CourseService courseService;
 
-    private final FavoriteCourseService favoriteCourseService;
-    private final UserService userService;
-    private final CourseService courseService;
-
-    public FavoriteCourseAPI(FavoriteCourseService favoriteCourseService, UserService userService,
-            CourseService courseService) {
-        this.favoriteCourseService = favoriteCourseService;
-        this.userService = userService;
-        this.courseService = courseService;
-    }
+    @Autowired
+    FavoriteCourseRepository favoriteCourseRepository;
 
     @GetMapping
     public ResponseEntity<List<FavoriteCourseDTO>> getFavorites() throws Exception {
@@ -65,7 +65,10 @@ public class FavoriteCourseAPI {
         if (course == null) {
             new Exception("Course not found");
         }
-
+        FavoriteCourse favoriteCourse= favoriteCourseRepository.findByCourseIdAndUserId(courseId,user.getUserId());
+        if(favoriteCourse!=null){
+            throw new RuntimeException("this course added your favorite list");
+        }
         favoriteCourseService.addFavoriteCourse(new FavoriteCourse(user, course));
 
         return ResponseEntity.ok(courseService.convertToCourseDTO(course));
@@ -90,7 +93,10 @@ public class FavoriteCourseAPI {
         if (course == null) {
             new Exception("Course not found");
         }
-
+        FavoriteCourse favoriteCourse= favoriteCourseRepository.findByCourseIdAndUserId(courseId,user.getUserId());
+        if(favoriteCourse==null){
+            throw new RuntimeException("not found this course in your favourite list course");
+        }
         favoriteCourseService.removeCourseInFavoriteCourse(user.getUserId(), course);
 
         return ResponseEntity.ok(favoriteCourseService.getFavoriteCoursesByUserId(user.getUserId()));

@@ -1,8 +1,12 @@
 package com.elearning.haui.enums;
+import lombok.*;
+@Getter
 
+@AllArgsConstructor
 public enum OrderStatus {
-    PENDING, // Đang chờ xử lý
-    PROCESSING, // Đang xử lý
-    COMPLETED, // Đã hoàn thành
-    CANCELLED // Đã hủy
+    PENDING("pending"),
+    PAID("paid"), 
+    FAILED("failed"),
+    CANCELLED ("cancelled");
+    private String value;
 }

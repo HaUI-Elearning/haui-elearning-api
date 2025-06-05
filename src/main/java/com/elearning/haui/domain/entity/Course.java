@@ -40,14 +40,14 @@ public class Course {
 
     
 
-    @Column
-    private float star;
+    @Column(name = "star")
+    private Double star;
 
     @Column(nullable = false)
     private Double hour;
 
     @Column(nullable = false)
-    private double price;
+    private Double price;
 
     @Column(name = "sold")
     private int sold;

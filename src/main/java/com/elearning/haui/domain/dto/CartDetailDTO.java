@@ -13,6 +13,8 @@ public class CartDetailDTO {
     private Long courseId;
     private String courseName;
     private String courseThumbnail;
-    private int quantity;
     private Double price;
+    private Double Star;
+    private String author;
+    private Double hourse;
 }

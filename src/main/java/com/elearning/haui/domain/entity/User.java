@@ -60,6 +60,9 @@ public class User {
     @JsonBackReference
     private Set<Course> listCouse;
 
+    @OneToMany(mappedBy = "user")
+    private Set<Cart> UserCart;
+
    
 
 }
