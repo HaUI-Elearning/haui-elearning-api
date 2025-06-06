@@ -12,7 +12,7 @@ import com.elearning.haui.domain.dto.ReviewDTO;
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.Review;
 import com.elearning.haui.domain.entity.User;
-import com.elearning.haui.domain.response.ReviewRestpone;
+import com.elearning.haui.domain.response.ReviewResponse;
 import com.elearning.haui.repository.CourseRepository;
 import com.elearning.haui.repository.EnrollmentRepository;
 import com.elearning.haui.repository.ReviewRepository;
@@ -29,8 +29,18 @@ public class ReviewService {
     @Autowired
     EnrollmentRepository enrollmentRepository;
     //mapper review to DTO
-    public List<?> mapperReviewDTO(List<Review> listReview,List<ReviewDTO> listReviewDTO){
+    public List<?> mapperReviewDTO(User user,List<Review> listReview,List<ReviewDTO> listReviewDTO){
         for(Review rv : listReview){
+            boolean isUserReview;
+            if (user != null) {
+                if (user.getUserId()==rv.getUser().getUserId()) {
+                    isUserReview = true;
+                } else {
+                    isUserReview = false;
+                }
+            } else {
+                isUserReview = false;
+            }
             ReviewDTO dto=new ReviewDTO(
             rv.getReviewId()
             ,rv.getCourse().getCourseId()
@@ -38,13 +48,14 @@ public class ReviewService {
             ,rv.getUser().getName()
             ,rv.getRating(),
              rv.getComment(),
-             rv.getCreatedAt());
+             rv.getCreatedAt(),
+             isUserReview);
              listReviewDTO.add(dto);
         }
         return listReviewDTO;
     }
     //mapper Review to DTO
-    public ReviewDTO mapReviewToDTO(Review rv)
+    public ReviewDTO mapReviewToDTO(Review rv,boolean isUserReview)
     {
         ReviewDTO dto=new ReviewDTO(
             rv.getReviewId()
@@ -53,7 +64,8 @@ public class ReviewService {
             ,rv.getUser().getName()
             ,rv.getRating(),
              rv.getComment(),
-             rv.getCreatedAt());
+             rv.getCreatedAt(),
+             isUserReview);
         return dto;
     }
      //check Rating and Comment
@@ -67,18 +79,25 @@ public class ReviewService {
     }
 
     //get All review
-    public ReviewRestpone getAllReview(Long CourseId){
-        Double aveRating=AVGRatting(CourseId);
-        List<Review> list=reviewRepository.findReviewsByCourseId(CourseId);
-        if(list.isEmpty())
-        {
+    public ReviewResponse getAllReview(Long courseId, String username) {
+        Double aveRating = AVGRatting(courseId);
+        List<Review> list = reviewRepository.findReviewsByCourseId(courseId);
+        if(list.isEmpty()) {
             throw new RuntimeException("Course not have reviews");
         }
-        List<ReviewDTO> listDTO=new ArrayList<>();
-        mapperReviewDTO(list,listDTO);
-        ReviewRestpone rs=new ReviewRestpone(aveRating, listDTO);
+
+        User user = null;
+        if (username != null && !username.trim().isEmpty()) {
+            user = userRepository.findByUsername(username);
+        }
+
+        List<ReviewDTO> listDTO = new ArrayList<>();
+        mapperReviewDTO(user, list, listDTO);
+
+        ReviewResponse rs = new ReviewResponse(aveRating, listDTO);
         return rs;
     }
+
     //get review by user
     public ReviewDTO getReviewByUser(String Username,Long reviewId){
         User user=userRepository.findByUsername(Username);
@@ -89,7 +108,7 @@ public class ReviewService {
         if (!Objects.equals(rv.getUser().getUserId(), user.getUserId())) {
             throw new RuntimeException("User is not authorized to update this review.");
         }
-        return mapReviewToDTO(rv);
+        return mapReviewToDTO(rv,true);
     }
 
     //add review by User
@@ -113,7 +132,7 @@ public class ReviewService {
         reviewRepository.save(rv);
         course.setStar(AVGRatting(course.getCourseId()));
         courseRepository.save(course);
-        ReviewDTO dto=mapReviewToDTO(rv);
+        ReviewDTO dto=mapReviewToDTO(rv,true);
         return dto;
 
     }
@@ -160,13 +179,17 @@ public class ReviewService {
     }
 
     //filter review by stars
-    public List<?> filterReviewByStars(Long CourseID,int levelStars)
+    public List<?> filterReviewByStars(String username,Long CourseID,int levelStars)
     {
         int min=levelStars;
         int max=levelStars+1;
         List<Review> listReview=reviewRepository.findReviewsByRatingRangeForCourseId(min,max,CourseID);
         List<ReviewDTO> rs=new ArrayList<>();
-        mapperReviewDTO(listReview,rs);
+        User user = null;
+        if (username != null && !username.trim().isEmpty()) {
+            user = userRepository.findByUsername(username);
+        }
+        mapperReviewDTO(user,listReview,rs);
         return rs;
     }
 

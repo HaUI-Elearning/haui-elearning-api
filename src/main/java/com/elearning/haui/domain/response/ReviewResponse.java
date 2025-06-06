@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ReviewRestpone {
+public class ReviewResponse {
     Double avgRatting;
     List<ReviewDTO> listReview;
 }
