@@ -63,6 +63,10 @@ public class TeacherService {
         dto.setDescription(c.getDescription());
         dto.setPrice(c.getPrice());
         dto.setThumbnail(c.getThumbnail());
+        dto.setStar(c.getStar());
+        dto.setSold(c.getSold());
+        dto.setAuthor(c.getAuthor().getName());
+        dto.setCreatedAt(c.getCreatedAt());
         dto.setCategoryId(courseCategory.getCategory().getCategoryId());
         
         return dto;
