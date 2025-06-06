@@ -42,4 +42,11 @@ public interface LessonsRepository extends JpaRepository<Lessons,Long>{
     """)
     int countLessonsByCourseAndAuthor(@Param("username") String username,
                             @Param("chapterId") Long chapterId);
+
+    @Query("""
+        select l from Lessons l
+        WHERE l.chapter.chapterId = :chapterId
+        order by l.position asc
+    """)
+    List<Lessons> findByChapterId(@Param("chapterId") Long chapterId);
 }

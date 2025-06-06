@@ -19,6 +19,7 @@ import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.CourseCategory;
 import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.repository.CategoryRepository;
+import com.elearning.haui.repository.ChaptersRepository;
 import com.elearning.haui.repository.CourseCategoryRepository;
 import com.elearning.haui.repository.CourseRepository;
 import com.elearning.haui.repository.UserRepository;
@@ -26,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 @Service
 public class TeacherService {
-
     @Autowired
     CourseCategoryRepository courseCategoryRepository ;
 
@@ -135,10 +135,11 @@ public class TeacherService {
             throw new RuntimeException ("Category not found");
         }
         User user=userRepository.findByUsername(username);
-        System.out.println(user.getName());
         if(user==null){
             throw new RuntimeException("User not found");
         }
+        System.out.println(user.getName());
+        
         Course course=new Course();
         course.setAuthor(user);
         course.setContents(content);

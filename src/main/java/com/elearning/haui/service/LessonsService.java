@@ -85,20 +85,36 @@ public LessonsDTO createLessonsByTeacher(
         Long chapterId,
         String title,
         MultipartFile videoFile,
-        MultipartFile pdfFile) throws IOException {
+        MultipartFile pdfFile,int Position) throws IOException {
     
     Chapters chapter = chaptersRepository.findById(chapterId)
         .orElseThrow(() -> new RuntimeException("Không tìm thấy Chapter"));
+
+    // Kiểm tra position hợp lệ
+    if (Position <= 0) {
+        throw new IllegalArgumentException("Position must be greater than 0");
+    }
+
+    // Lấy danh sách lessons hiện có trong chapter
+    List<Lessons> existingLessons = lessonsRepository.findByChapterId(chapterId);
+    int currentCount = existingLessons.size();
+    if (Position > currentCount + 1) {
+        throw new RuntimeException("Position cannot be greater than " + (currentCount + 1));
+    }
+
+    // Đẩy position của các lesson khác lên
+    for (Lessons existing : existingLessons) {
+        if (existing.getPosition() >= Position) {
+            existing.setPosition(existing.getPosition() + 1);
+            lessonsRepository.save(existing);
+        }
+    }
 
     Lessons lesson = new Lessons();
     lesson.setChapter(chapter);
     lesson.setTitle(title);
     lesson.setCreatedAt(LocalDateTime.now());
-
-    int currentPosition = lessonsRepository.countLessonsByCourseAndAuthor(username, chapterId);
-    lesson.setPosition(currentPosition);
-
-    lesson = lessonsRepository.save(lesson);
+    lesson.setPosition(Position);
 
     if (videoFile != null && !videoFile.isEmpty() && videoFile.getSize() > 100 * 1024 * 1024) {
         throw new IOException("Kích thước video vượt quá giới hạn 100MB");
@@ -162,15 +178,41 @@ public LessonsDTO updateLessonsByTeacher(
         MultipartFile pdfFile) throws IOException {
     
     Chapters chapter = chaptersRepository.findById(chapterId)
-        .orElseThrow(() -> new RuntimeException("Không tìm thấy Chapter"));
+        .orElseThrow(() -> new RuntimeException("Not found Chapter"));
 
-    Lessons lesson = lessonsRepository.getLessonsById(username, chapterId, lessonId);
+    Lessons lesson = lessonsRepository.getLessonsById(username, chapter.getChapterId(), lessonId);
     if (lesson == null) {
-        throw new RuntimeException("Không tìm thấy lesson");
+        throw new RuntimeException("Not found lesson");
     }
 
-    lesson.setTitle(title);
-    lesson.setPosition(position);
+    if (position <= 0) {
+        throw new IllegalArgumentException("Position must be greater than 0");
+    }
+
+    List<Lessons> existingLessons = lessonsRepository.findByChapterId(chapterId);
+    int currentCount = existingLessons.size();
+    if (position > currentCount) {
+        throw new RuntimeException("Position cannot be greater than " + currentCount);
+    }
+    //set old positions
+    int oldPosition = lesson.getPosition();
+    for (Lessons existing : existingLessons) {
+        if (existing.getLessonId().equals(lessonId)) {
+            continue;
+        }
+        if (oldPosition < position) {
+            if (existing.getPosition() > oldPosition && existing.getPosition() <= position) {
+                existing.setPosition(existing.getPosition() - 1);
+                lessonsRepository.save(existing);
+            }
+        } else {
+            if (existing.getPosition() >= position && existing.getPosition() < oldPosition) {
+                existing.setPosition(existing.getPosition() + 1);
+                lessonsRepository.save(existing);
+            }
+        }
+    }
+   
 
     if (videoFile != null && !videoFile.isEmpty() && videoFile.getSize() > 100 * 1024 * 1024) {
         throw new IOException("Kích thước video vượt quá giới hạn 100MB");
@@ -222,13 +264,25 @@ public LessonsDTO updateLessonsByTeacher(
     }
 }
 
-    //delete Lesson by teacher
-    public boolean deleteLesson(String username,Long chapterId,Long lessonId){
-        Lessons lesson = lessonsRepository.getLessonsById(username, chapterId, lessonId);
-        if(lesson==null){
-            throw new RuntimeException("Not found lesson");
-        }
-        lessonsRepository.delete(lesson);
-        return true;
+   @Transactional(rollbackFor = Exception.class)
+public boolean deleteLesson(String username, Long chapterId, Long lessonId) {
+    Lessons lesson = lessonsRepository.getLessonsById(username, chapterId, lessonId);
+    if (lesson == null) {
+        throw new RuntimeException("Not found lesson");
     }
+
+    int deletedPosition = lesson.getPosition();
+    lessonsRepository.delete(lesson);
+
+    // Điều chỉnh position của các lesson còn lại
+    List<Lessons> remainingLessons = lessonsRepository.findByChapterId(chapterId);
+    for (Lessons remaining : remainingLessons) {
+        if (remaining.getPosition() > deletedPosition) {
+            remaining.setPosition(remaining.getPosition() - 1);
+            lessonsRepository.save(remaining);
+        }
+    }
+
+    return true;
+}
 }

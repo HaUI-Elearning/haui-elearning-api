@@ -35,4 +35,11 @@ Chapters getChapterById(@Param("courseId") Long courseId,
     """)
 int countChaptersByCourseAndAuthor(@Param("courseId") Long courseId,
                                    @Param("authorName") String authorName);
+
+@Query("""
+        select c from Chapters c
+        where c.course.courseId = :courseId
+        order by c.position asc
+    """)
+    List<Chapters> findByCourseId(@Param("courseId") Long courseId);
 }
