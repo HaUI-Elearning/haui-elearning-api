@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.elearning.haui.domain.entity.Category;
+import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.CourseCategory;
 @Repository
 public interface CourseCategoryRepository extends JpaRepository<CourseCategory, Long> {
@@ -13,4 +14,7 @@ public interface CourseCategoryRepository extends JpaRepository<CourseCategory, 
 
     // Đếm số lượng khóa học theo thể loại
     long countByCategory(Category category);
+
+    CourseCategory findByCourse (Course course);
+
 }
