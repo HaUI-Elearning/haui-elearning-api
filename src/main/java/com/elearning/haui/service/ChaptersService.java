@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.entity.Chapters;
@@ -67,53 +68,105 @@ public class ChaptersService implements ChaptersServiceImp {
     }
     //Create chapter
     @Override
-    public ChaptersDTO addByTeacher(String username
-    , Long CourseId
-    ,String title 
-    ,String description) {
-        Course course =courseRepository.getCoursesIdByTeacher(username, CourseId);
-        if(course==null){
-            throw new RuntimeException("not found course");
+    @Transactional(rollbackFor = Exception.class)
+    public ChaptersDTO addByTeacher(String username, Long courseId, String title, String description, int position) {
+        Course course = courseRepository.getCoursesIdByTeacher(username, courseId);
+        if (course == null) {
+            throw new RuntimeException("Not found course");
         }
-        int currentChapterCount = chaptersRepository.countChaptersByCourseAndAuthor(CourseId, username);
-        Chapters chapter=new Chapters();
+
+        if (position <= 0) {
+            throw new IllegalArgumentException("Position must be greater than 0");
+        }
+
+        List<Chapters> existingChapters = chaptersRepository.findByCourseId(courseId);
+        int currentCount = existingChapters.size();
+        if (position > currentCount + 1) {
+            throw new RuntimeException("Position cannot be greater than " + (currentCount + 1));
+        }
+
+        for (Chapters existing : existingChapters) {
+            if (existing.getPosition() >= position) {
+                existing.setPosition(existing.getPosition() + 1);
+                chaptersRepository.save(existing);
+            }
+        }
+
+        Chapters chapter = new Chapters();
         chapter.setCourse(course);
         chapter.setTitle(title);
         chapter.setDescription(description);
         chapter.setCreatedAt(LocalDateTime.now());
-        chapter.setPosition(currentChapterCount+1);
-        chaptersRepository.save(chapter);
-        ChaptersDTO dto=mapChaptersToDTO(chapter);
-        return dto;
+        chapter.setPosition(position);
 
+        chaptersRepository.save(chapter);
+        ChaptersDTO dto = mapChaptersToDTO(chapter);
+        return dto;
     }
 
     @Override
-    public ChaptersDTO updateByTeacher(String username
-    ,Long CouseId
-    ,Long ChapterId
-    ,String title 
-    ,String description
-    ,int position) {
-        Chapters chapter=chaptersRepository.getChapterById(CouseId, ChapterId,username);
-        if(chapter==null){
-            throw new RuntimeException("not found chapter");
+    @Transactional(rollbackFor = Exception.class)
+    public ChaptersDTO updateByTeacher(String username, Long courseId, Long chapterId, String title, String description, int position) {
+        Chapters chapter = chaptersRepository.getChapterById(courseId, chapterId, username);
+        if (chapter == null) {
+            throw new RuntimeException("Not found chapter");
         }
+
+        if (position <= 0) {
+            throw new IllegalArgumentException("Position must be greater than 0");
+        }
+
+        List<Chapters> existingChapters = chaptersRepository.findByCourseId(courseId);
+        int currentCount = existingChapters.size();
+        if (position > currentCount) {
+            throw new RuntimeException("Position cannot be greater than " + currentCount);
+        }
+
+        int oldPosition = chapter.getPosition();
+        for (Chapters existing : existingChapters) {
+            if (existing.getChapterId().equals(chapterId)) {
+                continue;
+            }
+            if (oldPosition < position) {
+                if (existing.getPosition() > oldPosition && existing.getPosition() <= position) {
+                    existing.setPosition(existing.getPosition() - 1);
+                    chaptersRepository.save(existing);
+                }
+            } else {
+                if (existing.getPosition() >= position && existing.getPosition() < oldPosition) {
+                    existing.setPosition(existing.getPosition() + 1);
+                    chaptersRepository.save(existing);
+                }
+            }
+        }
+
         chapter.setTitle(title);
         chapter.setDescription(description);
         chapter.setPosition(position);
         chaptersRepository.save(chapter);
-        ChaptersDTO dto=mapChaptersToDTO(chapter);
+        ChaptersDTO dto = mapChaptersToDTO(chapter);
         return dto;
     }
 
     @Override
-    public boolean deleteByTeacher(String username, Long CouseId, Long ChapterId) {
-        Chapters chapter=chaptersRepository.getChapterById(CouseId, ChapterId,username);
-        if(chapter==null){
-            throw new RuntimeException("not found chapter");
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteByTeacher(String username, Long courseId, Long chapterId) {
+        Chapters chapter = chaptersRepository.getChapterById(courseId, chapterId, username);
+        if (chapter == null) {
+            throw new RuntimeException("Not found chapter");
         }
+
+        int deletedPosition = chapter.getPosition();
         chaptersRepository.delete(chapter);
+
+        List<Chapters> remainingChapters = chaptersRepository.findByCourseId(courseId);
+        for (Chapters remaining : remainingChapters) {
+            if (remaining.getPosition() > deletedPosition) {
+                remaining.setPosition(remaining.getPosition() - 1);
+                chaptersRepository.save(remaining);
+            }
+        }
+
         return true;
     }
     
