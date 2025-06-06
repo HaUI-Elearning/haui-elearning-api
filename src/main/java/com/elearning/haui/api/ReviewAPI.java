@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.elearning.haui.domain.dto.ReviewDTO;
 import com.elearning.haui.domain.entity.Review;
-import com.elearning.haui.domain.response.ReviewRestpone;
+import com.elearning.haui.domain.response.ReviewResponse;
 import com.elearning.haui.service.ReviewService;
 @RestController
 @RequestMapping("/api/v1/Review")
@@ -26,8 +26,8 @@ public class ReviewAPI {
     ReviewService reviewService;
     // get all Review
     @GetMapping("/getAll/{CourseId}")
-    public ResponseEntity<?> getAllReview(@PathVariable("CourseId") Long CourseId){
-        ReviewRestpone rs=reviewService.getAllReview(CourseId);
+    public ResponseEntity<?> getAllReview(@PathVariable("CourseId") Long CourseId,Authentication authentication){
+        ReviewResponse rs=reviewService.getAllReview(CourseId,authentication.getName());
         return ResponseEntity.ok(rs);
     }
 
@@ -76,12 +76,12 @@ public class ReviewAPI {
     public ResponseEntity<?> FilterReview(
         @PathVariable ("courseID") Long courseID
        ,@RequestParam int Stars
-        )
+        , Authentication authentication)
     {
         if(Stars <1 || Stars>5){
             throw new RuntimeException("Rating must be between 1 and 5");
         }
-        List<?> rs=reviewService.filterReviewByStars(courseID, Stars);
+        List<?> rs=reviewService.filterReviewByStars(authentication.getName(),courseID, Stars);
         return ResponseEntity.ok(rs);
     }
 }

@@ -15,4 +15,5 @@ public class ReviewDTO {
     private double rating;
     private String comment;
     private LocalDateTime createdAt ;
+    private boolean isUserReview=false;
 }

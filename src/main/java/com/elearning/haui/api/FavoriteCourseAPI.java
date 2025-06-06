@@ -71,7 +71,7 @@ public class FavoriteCourseAPI {
         }
         favoriteCourseService.addFavoriteCourse(new FavoriteCourse(user, course));
 
-        return ResponseEntity.ok(courseService.convertToCourseDTO(course));
+        return ResponseEntity.ok(favoriteCourseService.getFavoriteCoursesByUserId(user.getUserId()));
     }
 
     @DeleteMapping
