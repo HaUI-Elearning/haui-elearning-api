@@ -12,9 +12,10 @@ import java.util.List;
 public interface FavoriteCourseRepository extends JpaRepository<FavoriteCourse, Long> {
     List<FavoriteCourse> findByUser_UserId(Long userId);
 
-   @Query("""
-    select f from FavoriteCourse f 
-    where f.course.courseId = :courseId and f.user.userId = :userId
-""")
-FavoriteCourse findByCourseIdAndUserId(@Param("courseId") Long courseId, @Param("userId") Long userId);
+    @Query("""
+        select f from FavoriteCourse f 
+        where f.course.courseId = :courseId and f.user.userId = :userId
+    """)
+    FavoriteCourse findByCourseIdAndUserId(@Param("courseId") Long courseId, @Param("userId") Long userId);
+
 }

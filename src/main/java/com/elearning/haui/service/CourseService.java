@@ -133,7 +133,7 @@ public class CourseService {
                 chapterDTO.setDescription(c.getDescription());
                 chapterDTO.setPosition(c.getPosition());
                 chapterDTO.setCreatedAt(c.getCreatedAt());
-                
+
                 List<LessonsDTO> listLessonDTO = new ArrayList<>();
                 Set<Lessons> lessons = c.getListLessons();
                 if (lessons != null) {
@@ -159,9 +159,20 @@ public class CourseService {
 
         Double hoursCourse = timeCourse / 3600;
         Double hour = Math.round(hoursCourse * 10) / 10.0;
-        boolean isEnrolled = (userId != null) ? enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(userId, course.getCourseId()) : false;
 
-        CourseDTO courseDTO = new CourseDTO(
+        boolean isEnrolled = false;
+        boolean isAuthor = false;
+
+        if (userId != null) {
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+            isAuthor = checkAuthor(user.getName(), course);
+            if (!isAuthor) {
+                isEnrolled = enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(userId, course.getCourseId());
+            }
+        }
+
+        return new CourseDTO(
             course.getCourseId(),
             course.getName(),
             course.getThumbnail(),
@@ -174,10 +185,11 @@ public class CourseService {
             (course.getAuthor() != null ? course.getAuthor().getName() : "Unknown"),
             listChapterDTO,
             course.getCreatedAt(),
-            isEnrolled
+            isEnrolled,
+            isAuthor
         );
-        return courseDTO;
     }
+
 
     public long countCours() {
         return this.courseRepository.count();
@@ -324,6 +336,14 @@ public class CourseService {
         return convertToCourseDTO(course);
     }
 
+    //check Author
+    public boolean checkAuthor(String name,Course course){
+            if(!name.equals(course.getAuthor().getName())){
+                return false;
+            }
+            return true;
+    }
+
     //get detaill course by User
     public CourseDTO getCourseByUser(Long courseId,String username) 
     {
@@ -335,10 +355,16 @@ public class CourseService {
         if(user==null){
             throw new RuntimeException("User not found");
         }
-        boolean isEnrolled=enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(user.getUserId(),courseId);
-        if (!isEnrolled) {
-            throw new RuntimeException("User has not enrolled in this course");
+        boolean isEnrolled=false;
+        boolean isAuthor=checkAuthor(user.getName(), course);
+        if(!isAuthor){
+            isEnrolled=enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(user.getUserId(),courseId);
+            if (!isEnrolled) {
+                throw new RuntimeException("User has not enrolled in this course");
+            }
         }
+        
+        
         Double timeCourse = 0.0;
         List<ChaptersDTO> listChapterDTO = new ArrayList<>();
         Set<Chapters> chapters = course.getListChapters();
@@ -388,7 +414,8 @@ public class CourseService {
             (course.getAuthor() != null ? course.getAuthor().getName() : "Unknown"),
             listChapterDTO,
             course.getCreatedAt(),
-            isEnrolled
+            isEnrolled,
+            isAuthor
         );
 
     }

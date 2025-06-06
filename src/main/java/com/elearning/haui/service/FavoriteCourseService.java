@@ -1,11 +1,14 @@
 package com.elearning.haui.service;
 
 import com.elearning.haui.domain.dto.FavoriteCourseDTO;
+import com.elearning.haui.domain.entity.CartDetail;
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.FavoriteCourse;
 import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.repository.CartDetailRepository;
 import com.elearning.haui.repository.FavoriteCourseRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +16,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class FavoriteCourseService {
-
+    @Autowired
+    CartDetailRepository cartDetailRepository;
     private final FavoriteCourseRepository favoriteCourseRepository;
 
     public FavoriteCourseService(FavoriteCourseRepository favoriteCourseRepository) {
@@ -21,6 +25,10 @@ public class FavoriteCourseService {
     }
 
     public FavoriteCourse addFavoriteCourse(FavoriteCourse favoriteCourse) {
+        CartDetail cartDetail=cartDetailRepository.getCartDetailByCourseId(favoriteCourse.getCourse().getCourseId());
+        if(cartDetail!=null){
+            cartDetailRepository.delete(cartDetail);
+        }
         return favoriteCourseRepository.save(favoriteCourse);
     }
 

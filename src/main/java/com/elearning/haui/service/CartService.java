@@ -17,16 +17,21 @@ import com.elearning.haui.domain.entity.Cart;
 import com.elearning.haui.domain.entity.CartDetail;
 import com.elearning.haui.domain.entity.Chapters;
 import com.elearning.haui.domain.entity.Course;
+import com.elearning.haui.domain.entity.FavoriteCourse;
 import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.repository.CartDetailRepository;
 import com.elearning.haui.repository.CartRepository;
 import com.elearning.haui.repository.CourseRepository;
+import com.elearning.haui.repository.FavoriteCourseRepository;
 import com.elearning.haui.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 
 @Service
 public class CartService {
+
+    @Autowired
+    FavoriteCourseRepository favoriteCourseRepository;
 
     @Autowired
     CartRepository cartRepository;
@@ -97,6 +102,11 @@ public class CartService {
             newCartDetail.setCourse(course);
             newCartDetail.setPrice(course.getPrice()); // Lưu giá của khóa học
             cartDetailRepository.save(newCartDetail);
+            FavoriteCourse favoriteCourse=favoriteCourseRepository.findByCourseIdAndUserId(newCartDetail.getCourse().getCourseId(),user.getUserId());
+            if(favoriteCourse!=null){
+                 favoriteCourseRepository.delete(favoriteCourse);
+            }
+           
         }
         CartDTO dto= mapperCartToDTO(cart);
         return dto;
