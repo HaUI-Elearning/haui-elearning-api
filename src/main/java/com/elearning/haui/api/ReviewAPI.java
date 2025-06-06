@@ -27,7 +27,11 @@ public class ReviewAPI {
     // get all Review
     @GetMapping("/getAll/{CourseId}")
     public ResponseEntity<?> getAllReview(@PathVariable("CourseId") Long CourseId,Authentication authentication){
-        ReviewResponse rs=reviewService.getAllReview(CourseId,authentication.getName());
+        String username = null;
+        if (authentication != null && authentication.isAuthenticated()) {
+            username = authentication.getName();
+        }
+        ReviewResponse rs=reviewService.getAllReview(CourseId,username);
         return ResponseEntity.ok(rs);
     }
 
@@ -81,7 +85,11 @@ public class ReviewAPI {
         if(Stars <1 || Stars>5){
             throw new RuntimeException("Rating must be between 1 and 5");
         }
-        List<?> rs=reviewService.filterReviewByStars(authentication.getName(),courseID, Stars);
+        String username = null;
+        if (authentication != null && authentication.isAuthenticated()) {
+            username = authentication.getName();
+        }
+        List<?> rs=reviewService.filterReviewByStars(username,courseID, Stars);
         return ResponseEntity.ok(rs);
     }
 }

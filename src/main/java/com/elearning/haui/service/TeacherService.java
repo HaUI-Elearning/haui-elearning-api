@@ -169,10 +169,14 @@ public class TeacherService {
        ,String Description
        ,String name
        ,Double price
-       ,MultipartFile file){
+       ,MultipartFile file,Long CategoryId){
             Course course =courseRepository.getCoursesIdByTeacher(username, CourseId);
             if(course==null){
                 throw new RuntimeException("not found course");
+            }
+            Category category=categoryRepository.findByCategoryId(CategoryId);
+            if(category==null){
+                throw new RuntimeException ("Category not found");
             }
             course.setContents(content);
             course.setDescription(Description);
@@ -183,6 +187,12 @@ public class TeacherService {
                 course.setThumbnail(imageUrl);
             }
             courseRepository.save(course);
+            CourseCategory courseCategory=courseCategoryRepository.findByCourse(course);
+            if(courseCategory ==null){
+                throw new RuntimeException("not found course category");
+            }
+            courseCategory.setCategory(category);
+            courseCategoryRepository.save(courseCategory);
             CourseDTO courseDTO= mapCourseToDTO(course);
             return courseDTO;
     }

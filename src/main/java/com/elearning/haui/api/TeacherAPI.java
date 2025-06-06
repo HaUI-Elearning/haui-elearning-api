@@ -71,9 +71,10 @@ public class TeacherAPI {
        ,@RequestParam String name
        ,@RequestParam Double price
        ,@RequestParam MultipartFile file
+       ,@RequestParam Long CategoryId
     )
     {
-        CourseDTO result=teacherService.UpdateCourseByTeacher(authentication.getName(), CourseId, content, Description, name, price, file);
+        CourseDTO result=teacherService.UpdateCourseByTeacher(authentication.getName(), CourseId, content, Description, name, price, file,CategoryId);
         return ResponseEntity.ok(result);
     }
     //Delete Course By teacher
