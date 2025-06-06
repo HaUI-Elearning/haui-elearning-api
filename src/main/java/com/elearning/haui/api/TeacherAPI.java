@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.dto.LessonsDTO;
+import com.elearning.haui.domain.dto.TeacherCourseDTO;
 import com.elearning.haui.repository.ChaptersRepository;
 import com.elearning.haui.repository.LessonsRepository;
 import com.elearning.haui.service.ChaptersService;
@@ -58,7 +59,7 @@ public class TeacherAPI {
     @Operation(summary = "Lấy Khóa học theo id bởi giáo viên")
     @GetMapping("/getCourse/{courseId}")
     public ResponseEntity<?> getCouseByID(Authentication authentication,@PathVariable("courseId") Long courseId){
-        CourseDTO result=teacherService.getCoursById(authentication.getName(), courseId);
+        TeacherCourseDTO result=teacherService.getCoursById(authentication.getName(), courseId);
         return ResponseEntity.ok(result);
     }
     //Create Course by teacher
@@ -72,7 +73,7 @@ public class TeacherAPI {
        ,@RequestParam MultipartFile file,
        @RequestParam Long categoryId)
     {
-        CourseDTO result=teacherService.CreateCourseByTeacher(categoryId,authentication.getName(), content, Description, name, price, file);
+        TeacherCourseDTO result=teacherService.CreateCourseByTeacher(categoryId,authentication.getName(), content, Description, name, price, file);
         return ResponseEntity.ok(result);
     }
     //Update Course By Teacher
@@ -88,7 +89,7 @@ public class TeacherAPI {
        ,@RequestParam Long CategoryId
     )
     {
-        CourseDTO result=teacherService.UpdateCourseByTeacher(authentication.getName(), CourseId, content, Description, name, price, file,CategoryId);
+        TeacherCourseDTO result=teacherService.UpdateCourseByTeacher(authentication.getName(), CourseId, content, Description, name, price, file,CategoryId);
         return ResponseEntity.ok(result);
     }
     //Delete Course By teacher
