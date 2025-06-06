@@ -216,11 +216,7 @@ public class UserAPI {
         return ResponseEntity.ok(result);
     }
 
-
-
-
-
-
+   
     // Lấy danh sách người dùng, phân trang
     @GetMapping("/users")
     public ResponseEntity<RestResponse<ResultPaginationDTO>> getAllUser(

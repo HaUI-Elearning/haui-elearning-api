@@ -45,13 +45,25 @@ public class paymentsService {
     PaymentRepository paymentRepository;
     @Autowired
     EnrollmentRepository enrollmentRepository;
-
+    //check course avalable with price than 0
+    public boolean checkCourse(List<Course> listCourse){
+        for(Course c :listCourse){
+            if(c.getPrice()==0){
+                return false;
+            }
+        }
+        return true;
+    }
     @Transactional
     public Order createOrder(String username, List<Long> courseIds,boolean viaCart) {
         
         User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("User not found");
+        }
+        List<Course> listCourse=courseRepository.findAllById(courseIds);
+        if(!checkCourse(listCourse)){
+            throw new RuntimeException("Cannot make transactions with 0 VND course");
         }
         if (viaCart) {
         Cart cart = cartRepository.findByUser(user)
@@ -60,11 +72,11 @@ public class paymentsService {
         List<Long> cartCourseIds = cart.getCartDetails().stream()
                 .map(cd -> cd.getCourse().getCourseId())
                 .collect(Collectors.toList());
-
+        
         if (cartCourseIds.size() != courseIds.size() || !cartCourseIds.containsAll(courseIds)) {
             throw new RuntimeException("Cart details do not match selected courses");
         }
-    }
+        }
         
         Order order = new Order();
         order.setUser(user);
