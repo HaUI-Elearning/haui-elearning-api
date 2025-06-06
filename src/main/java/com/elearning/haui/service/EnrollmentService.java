@@ -74,8 +74,8 @@ public class EnrollmentService {
 
   // Enroll free course
 
-public String EnrollFreeCourse(String Username,Long CourseId){
-    User user=userRepository.findByName(Username);
+public CourseRepone EnrollFreeCourse(String Username,Long CourseId){
+    User user=userRepository.findByUsername(Username);
     if(user==null){
       throw new RuntimeException("User not found");
     }
@@ -110,6 +110,10 @@ public String EnrollFreeCourse(String Username,Long CourseId){
     enrollment.setUser(user);
     enrollment.setEnrollmentDate(LocalDateTime.now());
     enrollmentRepository.save(enrollment);
-    return "Enroll free course success";
+    course.setSold(course.getSold()+1);
+    courseRepository.save(course);
+    CourseRepone repone=mapToCourseDTO(course);
+    
+    return repone;
   }
 }

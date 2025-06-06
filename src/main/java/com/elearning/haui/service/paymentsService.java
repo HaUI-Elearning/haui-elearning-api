@@ -139,5 +139,12 @@ public class paymentsService {
 
         paymentRepository.save(payment);
     }
+
+    public void getAllHistoryPurcharses(String Username){
+        List<Payment> ListPayment=paymentRepository.findByUserIdAndStatus(Username,"success");
+        if(ListPayment.isEmpty()){
+            
+        }
+    }
     
 }
