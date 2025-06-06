@@ -79,6 +79,18 @@ public class ReviewService {
         ReviewRestpone rs=new ReviewRestpone(aveRating, listDTO);
         return rs;
     }
+    //get review by user
+    public ReviewDTO getReviewByUser(String Username,Long reviewId){
+        User user=userRepository.findByUsername(Username);
+        if (user == null) {
+            throw new RuntimeException("User not found with username: " + Username);
+        }
+        Review rv=reviewRepository.findById(reviewId).orElseThrow(()->new RuntimeException("Not found Review  "));
+        if (!Objects.equals(rv.getUser().getUserId(), user.getUserId())) {
+            throw new RuntimeException("User is not authorized to update this review.");
+        }
+        return mapReviewToDTO(rv);
+    }
 
     //add review by User
     public ReviewDTO addReviewByUser(String Username,Long CourseID,Double Rating,String Comment){

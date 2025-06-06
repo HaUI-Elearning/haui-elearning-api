@@ -31,6 +31,15 @@ public class ReviewAPI {
         return ResponseEntity.ok(rs);
     }
 
+
+    //get by id
+    @GetMapping("/{reviewId}")
+    public ResponseEntity<?> getReviewByUser(Authentication authentication,@PathVariable("reviewId") Long reviewId)
+    {
+        ReviewDTO result=reviewService.getReviewByUser(authentication.getName(), reviewId);
+        return ResponseEntity.ok(result);
+    }
+
     //add review
     @PostMapping("/add")
     public ResponseEntity<?> addReview(Authentication authentication,

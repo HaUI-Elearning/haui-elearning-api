@@ -68,7 +68,12 @@ public class PaymentsAPI {
 
     @GetMapping("/create")
     public ResponseEntity<?> createPayment(Authentication authentication,@RequestBody PaymentRequest Paymentrequest, HttpServletRequest request) throws UnsupportedEncodingException {
-        
+        if(!Paymentrequest.isViaCart()&&Paymentrequest.getCourseIds().size()>1){
+            throw new RuntimeException("Cannot purchase directly with more than 2 courses");
+        }
+        if(Paymentrequest.getCourseIds().isEmpty()){
+            throw new RuntimeException("Payment cannot be made for course quantity <1");
+        }
         Order order = paymentService.createOrder(authentication.getName(),Paymentrequest.getCourseIds(),Paymentrequest.isViaCart());
 
         String txnRef = VNPayUtil.generateRandomTxnRef();
