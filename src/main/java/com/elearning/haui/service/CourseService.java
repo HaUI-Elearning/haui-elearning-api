@@ -49,7 +49,6 @@ import javax.management.RuntimeErrorException;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
-    private final CourseCategoryRepository courseCategoryRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final LocalDateTime now = LocalDateTime.now();
     private final UserRepository userRepository;
@@ -57,6 +56,8 @@ public class CourseService {
     @Autowired
     EnrollmentRepository enrollmentRepository;
     ImgBBService imgBBService;
+    @Autowired
+    CourseCategoryRepository courseCategoryRepository;
 
     public CourseService(ImgBBService imgBBService,
                          OrderDetailRepository orderDetailRepository,

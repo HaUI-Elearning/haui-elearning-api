@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.dto.TeacherCourseDTO;
 import com.elearning.haui.domain.entity.Category;
 import com.elearning.haui.domain.entity.Chapters;
 import com.elearning.haui.domain.entity.Course;
@@ -42,86 +43,52 @@ public class TeacherService {
     ImgBBService imgBBService;
 
     //Map ListCourse to DTO
-    public List<CourseDTO> mapperListCourseToDTO(List<Course> listCourse){
-        List<CourseDTO> ListDTO=new ArrayList<>();
-        for(Course c : listCourse){
-            CourseDTO dto=new CourseDTO();
-            dto.setAuthor(c.getAuthor().getName());
-            List<ChaptersDTO> listChapterDTO=new ArrayList<>();
-            for(Chapters chapter : c.getListChapters()){
-                ChaptersDTO chaptersDTO=new ChaptersDTO();
-                chaptersDTO.setId(chapter.getChapterId());
-                chaptersDTO.setTitle(chapter.getTitle());
-                chaptersDTO.setPosition(chapter.getPosition());
-                chaptersDTO.setDescription(chapter.getDescription());
-                chaptersDTO.setCreatedAt(chapter.getCreatedAt());
-                listChapterDTO.add(chaptersDTO);
-            }
-            dto.setChapters(listChapterDTO);
-            dto.setContents(c.getContents());
-            dto.setCourseId(c.getCourseId());
-            dto.setCreatedAt(c.getCreatedAt());
-            dto.setDescription(c.getDescription());
-            dto.setHour(c.getHour());
-            dto.setName(c.getName());
-            dto.setPrice(c.getPrice());
-            dto.setStar(c.getStar());
-            dto.setThumbnail(c.getThumbnail());
-            ListDTO.add(dto);
+    public List<TeacherCourseDTO> mapperListCourseToDTO(List<Course> listCourse){
+        List<TeacherCourseDTO> ListDTO = new ArrayList<>();
+        for (Course c : listCourse) {
+            ListDTO.add(mapCourseToDTO(c));
         }
         return ListDTO;
     }
     //map course to DTO
-    public CourseDTO mapCourseToDTO(Course course) {
-        CourseDTO dto = new CourseDTO();
-        dto.setAuthor(course.getAuthor().getName());
-
-        List<ChaptersDTO> listChapterDTO = new ArrayList<>();
-        for (Chapters chapter : course.getListChapters()) {
-            ChaptersDTO chaptersDTO = new ChaptersDTO();
-            chaptersDTO.setId(chapter.getChapterId());
-            chaptersDTO.setTitle(chapter.getTitle());
-            chaptersDTO.setPosition(chapter.getPosition());
-            chaptersDTO.setDescription(chapter.getDescription());
-            chaptersDTO.setCreatedAt(chapter.getCreatedAt());
-            listChapterDTO.add(chaptersDTO);
+    public TeacherCourseDTO mapCourseToDTO(Course c) {
+        CourseCategory courseCategory= courseCategoryRepository.findByCourse(c);
+        if(courseCategory==null){
+            throw new RuntimeException("This course does not currently belong to any category");
         }
-        dto.setChapters(listChapterDTO);
-
-        dto.setContents(course.getContents());
-        dto.setCourseId(course.getCourseId());
-        dto.setCreatedAt(course.getCreatedAt());
-        dto.setDescription(course.getDescription());
-        dto.setHour(course.getHour());
-        dto.setName(course.getName());
-        dto.setPrice(course.getPrice());
-        dto.setStar(course.getStar());
-        dto.setThumbnail(course.getThumbnail());
+        TeacherCourseDTO dto=new TeacherCourseDTO();
+        dto.setCourseId(c.getCourseId());
+        dto.setName(c.getName());
+        dto.setContents(c.getContents());
+        dto.setDescription(c.getDescription());
+        dto.setPrice(c.getPrice());
+        dto.setThumbnail(c.getThumbnail());
+        dto.setCategoryId(courseCategory.getCategory().getCategoryId());
         
         return dto;
     }
     //get all list course created by Teacher
-    public List<CourseDTO> getAllCourseByTeacher(String username){
+    public List<TeacherCourseDTO> getAllCourseByTeacher(String username){
         List<Course> listCourse=courseRepository.getAllCourseByTeacher(username);
         if (listCourse.isEmpty()) {
             throw new RuntimeException("No courses found for teacher ");
         }
-        List<CourseDTO> listDTO=mapperListCourseToDTO(listCourse);; 
+        List<TeacherCourseDTO> listDTO=mapperListCourseToDTO(listCourse);; 
         return listDTO;
         
     }
 
     //get coure{id} created by Teacher 
-    public CourseDTO getCoursById(String username,Long couseId){
+    public TeacherCourseDTO getCoursById(String username,Long couseId){
         Course course =courseRepository.getCoursesIdByTeacher(username, couseId);
         if(course==null){
             throw new RuntimeException("not found course");
         }
-        CourseDTO courseDTO= mapCourseToDTO(course);
+        TeacherCourseDTO courseDTO= mapCourseToDTO(course);
         return courseDTO;
     }
     //Create Coure by Teacher
-    public CourseDTO CreateCourseByTeacher(
+    public TeacherCourseDTO CreateCourseByTeacher(
         Long categoryId
        ,String username
        ,String content
@@ -159,12 +126,12 @@ public class TeacherService {
         courseCategory.setCourse(course);
         courseCategory.setCategory(category);
         courseCategoryRepository.save(courseCategory);
-        CourseDTO courseDTO= mapCourseToDTO(course);
+        TeacherCourseDTO courseDTO= mapCourseToDTO(course);
         return courseDTO;
     }
 
     //Update Course by Teacher
-    public CourseDTO UpdateCourseByTeacher(String username
+    public TeacherCourseDTO UpdateCourseByTeacher(String username
        ,Long CourseId
        ,String content
        ,String Description
@@ -196,7 +163,7 @@ public class TeacherService {
             }
             courseCategory.setCategory(category);
             courseCategoryRepository.save(courseCategory);
-            CourseDTO courseDTO= mapCourseToDTO(course);
+            TeacherCourseDTO courseDTO= mapCourseToDTO(course);
             return courseDTO;
     }
     //Delete Course by Teacher
