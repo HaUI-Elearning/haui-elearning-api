@@ -183,9 +183,11 @@ public class TeacherService {
             course.setDescription(Description);
             course.setName(name);
             course.setPrice(price);
+            if (file != null && !file.isEmpty()) {
             String imageUrl = imgBBService.checkAndUploadImage(file);
-            if (imageUrl != null) {
-                course.setThumbnail(imageUrl);
+                if (imageUrl != null) {
+                    course.setThumbnail(imageUrl);
+                }
             }
             courseRepository.save(course);
             CourseCategory courseCategory=courseCategoryRepository.findByCourse(course);

@@ -84,7 +84,7 @@ public class TeacherAPI {
        ,@RequestParam String Description
        ,@RequestParam String name
        ,@RequestParam Double price
-       ,@RequestParam MultipartFile file
+       ,@RequestParam(required = false) MultipartFile file
        ,@RequestParam Long CategoryId
     )
     {
