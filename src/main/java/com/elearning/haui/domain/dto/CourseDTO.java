@@ -29,4 +29,5 @@ public class CourseDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
     private boolean isEnrolled=false;
+    private boolean isAuthorCourse=false;
 }
