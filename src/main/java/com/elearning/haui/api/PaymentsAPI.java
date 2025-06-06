@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -65,12 +66,13 @@ public class PaymentsAPI {
     paymentsService paymentService;
     @Autowired
     VNPayConfig config;
-
-    @GetMapping("/create")
+    
+    @PostMapping("/create")
     public ResponseEntity<?> createPayment(Authentication authentication,@RequestBody PaymentRequest Paymentrequest, HttpServletRequest request) throws UnsupportedEncodingException {
         if(!Paymentrequest.isViaCart()&&Paymentrequest.getCourseIds().size()>1){
             throw new RuntimeException("Cannot purchase directly with more than 2 courses");
         }
+
         if(Paymentrequest.getCourseIds().isEmpty()){
             throw new RuntimeException("Payment cannot be made for course quantity <1");
         }

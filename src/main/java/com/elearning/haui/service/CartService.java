@@ -72,7 +72,9 @@ public class CartService {
         // Kiểm tra khóa học
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
-
+        if(course.getPrice()==0){
+            throw new RuntimeException("cannot add course to Cart with price 0 VND");
+        }
         // Kiểm tra giỏ hàng
         Cart cart = cartRepository.findByUser(user).orElse(null);
 

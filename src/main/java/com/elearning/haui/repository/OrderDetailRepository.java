@@ -20,7 +20,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
        "JOIN CourseCategory cc ON cc.course.courseId = c.courseId " +
        "JOIN cc.category cat " +
        "JOIN od.order o " +
-       "WHERE o.status = 'paid' " +
+       "WHERE o.status IN ('paid', 'free')" +
        "GROUP BY c.courseId, c.name, cat.name, c.price, author.name " +
        "HAVING COUNT(od) >= 5 " +  
        "ORDER BY COUNT(od) DESC")
