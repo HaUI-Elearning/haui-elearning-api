@@ -19,7 +19,13 @@ public class TeacherCourseDTO {
     private String thumbnail;
     private String description;
     private String contents;
+    private Double star;
+    private Double hour;
     private double price;
+    private int sold;
+    private String author;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createdAt;
     private Long CategoryId;
 
 }
