@@ -142,17 +142,8 @@ public class CartService {
             // Xử lý khi không tìm thấy user
             new RuntimeException("User not found for username: " + username);
         }
-
-        // Tìm cart của user
-        Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Cart not found"));
-
         // Xoá cartDetail
         if (cartDetailRepository.deleteByUserIdAndCourseId(user.getUserId(), courseId) > 0) {
-            // Kiểm tra xem giỏ hàng còn món nào không
-            if (cart.getCartDetails().isEmpty()) {
-                // Nếu giỏ hàng không còn gì, có thể xóa Cart hoặc cập nhật trạng thái giỏ hàng
-                cartRepository.delete(cart); // Nếu bạn muốn xóa giỏ hàng khi không còn sản phẩm
-            }
             return true;
         }
         return false;
