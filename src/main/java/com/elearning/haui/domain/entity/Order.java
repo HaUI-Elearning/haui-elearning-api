@@ -43,4 +43,5 @@ public class Order {
     // Quan hệ 1-n với OrderDetail: Mỗi Order có nhiều OrderDetail
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails; // Sửa ở đây để lấy danh sách OrderDetai
+    
 }
