@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.elearning.haui.domain.dto.HistoryPurcharseDTO;
 import com.elearning.haui.domain.entity.Cart;
 import com.elearning.haui.domain.entity.CartDetail;
 import com.elearning.haui.domain.entity.Course;
@@ -140,11 +141,30 @@ public class paymentsService {
         paymentRepository.save(payment);
     }
 
-    public void getAllHistoryPurcharses(String Username){
+    //History purcharse course
+    public List<HistoryPurcharseDTO> mapperListDTO()
+    {
+        return null;
+    }
+
+    public HistoryPurcharseDTO mapperDTO()
+    {
+        return null;
+    }
+
+
+    public List<HistoryPurcharseDTO> getAllHistoryPurcharses(String Username){
         List<Payment> ListPayment=paymentRepository.findByUserIdAndStatus(Username,"success");
         if(ListPayment.isEmpty()){
-            
+            throw new RuntimeException("You not have payments");
         }
+        for(Payment p : ListPayment){
+           Order o = p.getOrder();
+           
+        }
+        
+
+        return null;
     }
     
 }
