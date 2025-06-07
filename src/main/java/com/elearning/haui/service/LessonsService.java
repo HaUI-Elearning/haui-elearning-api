@@ -90,19 +90,19 @@ public LessonsDTO createLessonsByTeacher(
     Chapters chapter = chaptersRepository.findById(chapterId)
         .orElseThrow(() -> new RuntimeException("Không tìm thấy Chapter"));
 
-    // Kiểm tra position hợp lệ
+    // check position hợp lệ
     if (Position <= 0) {
         throw new IllegalArgumentException("Position must be greater than 0");
     }
 
-    // Lấy danh sách lessons hiện có trong chapter
+    //get lessons hiện có trong chapter
     List<Lessons> existingLessons = lessonsRepository.findByChapterId(chapterId);
     int currentCount = existingLessons.size();
     if (Position > currentCount + 1) {
         throw new RuntimeException("Position cannot be greater than " + (currentCount + 1));
     }
 
-    // Đẩy position của các lesson khác lên
+    // sort old position
     for (Lessons existing : existingLessons) {
         if (existing.getPosition() >= Position) {
             existing.setPosition(existing.getPosition() + 1);
@@ -115,12 +115,14 @@ public LessonsDTO createLessonsByTeacher(
     lesson.setTitle(title);
     lesson.setCreatedAt(LocalDateTime.now());
     lesson.setPosition(Position);
-
+    if ((videoFile == null || videoFile.isEmpty()) && (pdfFile == null || pdfFile.isEmpty())) {
+        throw new IllegalArgumentException("At least one file (video or PDF) must be provided when creating a lesson.");
+    }
     if (videoFile != null && !videoFile.isEmpty() && videoFile.getSize() > 100 * 1024 * 1024) {
-        throw new IOException("Kích thước video vượt quá giới hạn 100MB");
+        throw new IOException("Video size exceeds 100MB limit");
     }
     if (pdfFile != null && !pdfFile.isEmpty() && pdfFile.getSize() > 100 * 1024 * 1024) {
-        throw new IOException("Kích thước PDF vượt quá giới hạn 100MB");
+        throw new IOException("PDF size exceeds 100MB limit");
     }
 
     // Tạo publicId cho video và PDF
@@ -163,7 +165,7 @@ public LessonsDTO createLessonsByTeacher(
         LessonsDTO dto = mapLessonToDTO(lesson);
         return dto;
     } catch (Exception e) {
-        throw new IOException("Không thể tải file lên Cloudinary: " + e.getMessage(), e);
+        throw new IOException("can not upload to Cloudinary: " + e.getMessage(), e);
     }
 }
 
@@ -215,10 +217,10 @@ public LessonsDTO updateLessonsByTeacher(
    
 
     if (videoFile != null && !videoFile.isEmpty() && videoFile.getSize() > 100 * 1024 * 1024) {
-        throw new IOException("Kích thước video vượt quá giới hạn 100MB");
+        throw new IOException("Video size exceeds 100MB limit");
     }
     if (pdfFile != null && !pdfFile.isEmpty() && pdfFile.getSize() > 100 * 1024 * 1024) {
-        throw new IOException("Kích thước PDF vượt quá giới hạn 100MB");
+        throw new IOException("PDF size exceeds 100MB limit");
     }
 
     // Tạo publicId cho video và PDF
@@ -260,7 +262,7 @@ public LessonsDTO updateLessonsByTeacher(
         LessonsDTO dto = mapLessonToDTO(lesson);
         return dto;
     } catch (Exception e) {
-        throw new IOException("Không thể tải file lên Cloudinary: " + e.getMessage(), e);
+        throw new IOException("can not upload to Cloudinary: " + e.getMessage(), e);
     }
 }
 
@@ -274,7 +276,7 @@ public boolean deleteLesson(String username, Long chapterId, Long lessonId) {
     int deletedPosition = lesson.getPosition();
     lessonsRepository.delete(lesson);
 
-    // Điều chỉnh position của các lesson còn lại
+    // set olds position 
     List<Lessons> remainingLessons = lessonsRepository.findByChapterId(chapterId);
     for (Lessons remaining : remainingLessons) {
         if (remaining.getPosition() > deletedPosition) {

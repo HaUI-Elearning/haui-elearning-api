@@ -192,8 +192,8 @@ public class TeacherAPI {
             Authentication authentication,
             @RequestParam Long chapterId,
             @RequestParam String title,
-            @RequestParam MultipartFile videoFile,
-            @RequestParam MultipartFile pdfFile,
+            @RequestParam (required = false) MultipartFile videoFile,
+            @RequestParam (required = false) MultipartFile pdfFile,
             @RequestParam(required = false) Integer Position) throws IOException {
         int assignedPosition = (Position == null) ? lessonsRepository.countLessonsByCourseAndAuthor(authentication.getName(), chapterId) + 1 : Position;
         LessonsDTO result = lessonsService.createLessonsByTeacher(authentication.getName(), chapterId, title, videoFile, pdfFile, assignedPosition);
@@ -207,8 +207,8 @@ public class TeacherAPI {
     @PathVariable("lessonId") Long lessonId,
     @RequestParam String title,
     @RequestParam int Position,
-    @RequestParam MultipartFile videoFile,
-    @RequestParam MultipartFile pdfFile) throws IOException
+    @RequestParam (required =false) MultipartFile  videoFile,
+    @RequestParam (required =false) MultipartFile pdfFile) throws IOException
     {
         LessonsDTO result=lessonsService.updateLessonsByTeacher(authentication.getName(), chapterId, lessonId, title, Position, videoFile, pdfFile);
         return ResponseEntity.ok(result);

@@ -62,7 +62,7 @@ public class ReviewAPI {
         @RequestParam Double Rating,
         @RequestParam String Comment)
     {
-        String rs=reviewService.UpdateReviewByUser(authentication.getName(),ReviewID, Rating, Comment);
+        ReviewDTO rs=reviewService.UpdateReviewByUser(authentication.getName(),ReviewID, Rating, Comment);
         return ResponseEntity.ok(rs);
     }
     //delete review
