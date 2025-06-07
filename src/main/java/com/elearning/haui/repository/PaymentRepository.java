@@ -22,4 +22,13 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         and p.status = :status
     """)
     List<Payment> findByUserIdAndStatus(@Param("username") String username, @Param("status") String status);
+    
+    @Query("""
+        select p from Payment p
+        join p.order o
+        join o.user u
+        where u.username = :username
+        and o.orderId = :orderId
+    """)
+    Payment findByUsernameAndPaymentid(@Param("username") String username, @Param("orderId") Long orderId);
 }

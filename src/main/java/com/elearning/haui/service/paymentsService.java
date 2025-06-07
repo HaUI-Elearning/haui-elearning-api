@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.elearning.haui.domain.dto.CourseRepone;
 import com.elearning.haui.domain.dto.HistoryPurcharseDTO;
+import com.elearning.haui.domain.dto.PaymentDTO;
 import com.elearning.haui.domain.entity.Cart;
 import com.elearning.haui.domain.entity.CartDetail;
 import com.elearning.haui.domain.entity.Course;
@@ -142,29 +144,101 @@ public class paymentsService {
     }
 
     //History purcharse course
-    public List<HistoryPurcharseDTO> mapperListDTO()
-    {
-        return null;
+    
+    public PaymentDTO mapPaymentToDTO(Payment p){
+        PaymentDTO dto=new PaymentDTO();
+        dto.setPaymentDate(p.getPaymentDate());
+        dto.setStatus(p.getStatus());
+        dto.setTotalAmount(p.getTotalAmount());
+        dto.setTxnRef(p.getTxnRef());
+        dto.setPaymentId(p.getPaymentId());
+        return dto;
+    
     }
 
-    public HistoryPurcharseDTO mapperDTO()
-    {
-        return null;
-    }
-
-
-    public List<HistoryPurcharseDTO> getAllHistoryPurcharses(String Username){
-        List<Payment> ListPayment=paymentRepository.findByUserIdAndStatus(Username,"success");
-        if(ListPayment.isEmpty()){
-            throw new RuntimeException("You not have payments");
+    public List<CourseRepone> mapToCoursesDTO(List<Course> listCourses){
+        List<CourseRepone> dtos=new ArrayList<>();
+        for(Course c : listCourses){
+            CourseRepone dto=mapToCourseDTO(c);
+            dtos.add(dto);
         }
-        for(Payment p : ListPayment){
-           Order o = p.getOrder();
-           
-        }
-        
-
-        return null;
+        return dtos;
     }
+    public CourseRepone mapToCourseDTO(Course course) {
+    return new CourseRepone(
+                    course.getCourseId(),
+                    course.getName(),
+                    course.getThumbnail(),
+                    course.getDescription(),
+                    course.getContents(),
+                    course.getStar(),
+                    course.getHour(),
+                    course.getPrice(),
+                    course.getSold(),
+                    course.getAuthor().getName(),
+                    course.getCreatedAt());
+    }
+    public List<HistoryPurcharseDTO> mapperListDTO(List<Order> orders) {
+    List<HistoryPurcharseDTO> dtos = new ArrayList<>();
+    
+   
+    for (Order order : orders) {
+        Payment payment = order.getPayment(); 
+        List<Course> courses =new ArrayList<>(); 
+        for(OrderDetail od : order.getOrderDetails()){
+            courses.add(od.getCourse());
+        }
+        HistoryPurcharseDTO dto = mapperDTO(order, payment, courses);
+        dtos.add(dto);
+    }
+
+    return dtos;
+}
+
+
+    public HistoryPurcharseDTO mapperDTO(Order o,Payment Payments,List<Course> Courses)
+    {
+        List<CourseRepone> courseDTO=mapToCoursesDTO(Courses);
+        PaymentDTO paymentDTO=mapPaymentToDTO(Payments);
+        HistoryPurcharseDTO dto=new HistoryPurcharseDTO();
+        dto.setCourses(courseDTO);
+        dto.setPayment(paymentDTO);
+        dto.setOrderId(o.getOrderId());
+        dto.setOrderStatus(o.getStatus());
+        dto.setTotalAmount(o.getTotalAmount());
+        return dto;
+    }
+
+    //get all
+    public List<HistoryPurcharseDTO> getAllHistoryPurcharses(String username) {
+        List<Payment> listPayment = paymentRepository.findByUserIdAndStatus(username, "success");
+        if (listPayment.isEmpty()) {
+            throw new RuntimeException("You don't have any successful payments.");
+        }
+
+        List<Order> orders = new ArrayList<>();
+        for (Payment p : listPayment) {
+            if (p.getOrder() != null) {
+                orders.add(p.getOrder());
+            }
+        }
+
+        return mapperListDTO(orders);
+    }
+    
+    // get by id
+    public HistoryPurcharseDTO getById(String username,Long OrderId){
+        Payment payment=paymentRepository.findByUsernameAndPaymentid(username, OrderId);
+        if(payment==null){
+            throw new RuntimeException("Payment not found");
+        }
+        Order order=payment.getOrder();
+        List<Course> courses =new ArrayList<>(); 
+        for(OrderDetail od : order.getOrderDetails()){
+            courses.add(od.getCourse());
+        }
+        return mapperDTO(order, payment, courses);
+    }
+
     
 }

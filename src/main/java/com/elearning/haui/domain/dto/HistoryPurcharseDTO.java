@@ -12,7 +12,6 @@ public class HistoryPurcharseDTO {
     private LocalDateTime createdAt;
     private String orderStatus;
     private Double totalAmount;
-    private boolean viaCart;
     private List<CourseRepone> courses;
     private PaymentDTO payment;
 }

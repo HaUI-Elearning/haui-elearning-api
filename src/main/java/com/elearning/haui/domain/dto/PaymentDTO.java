@@ -7,6 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentDTO {
+    private Long paymentId;
     private String status;
     private LocalDateTime paymentDate;
     private String txnRef;
