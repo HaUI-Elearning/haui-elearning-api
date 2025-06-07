@@ -208,14 +208,22 @@ public class paymentsService {
         dto.setTotalAmount(o.getTotalAmount());
         return dto;
     }
-
-    //get all
+    //get all by User
     public List<HistoryPurcharseDTO> getAllHistoryPurcharses(String username) {
-        List<Payment> listPayment = paymentRepository.findByUserIdAndStatus(username, "success");
-        if (listPayment.isEmpty()) {
-            throw new RuntimeException("You don't have any successful payments.");
+        List<Payment> listPayment = paymentRepository.findByUser(username);
+        List<Order> orders = new ArrayList<>();
+        for (Payment p : listPayment) {
+            if (p.getOrder() != null) {
+                orders.add(p.getOrder());
+            }
         }
 
+        return mapperListDTO(orders);
+    }
+
+    //get all by status
+    public List<HistoryPurcharseDTO> getAllHistoryPurcharsesByStatus(String username,String status) {
+        List<Payment> listPayment = paymentRepository.findByUserAndStatus(username, status);
         List<Order> orders = new ArrayList<>();
         for (Payment p : listPayment) {
             if (p.getOrder() != null) {
@@ -227,8 +235,8 @@ public class paymentsService {
     }
     
     // get by id
-    public HistoryPurcharseDTO getById(String username,Long OrderId){
-        Payment payment=paymentRepository.findByUsernameAndPaymentid(username, OrderId);
+    public HistoryPurcharseDTO getById(String username,Long Paymentid){
+        Payment payment=paymentRepository.findByUsernameAndPaymentid(username, Paymentid);
         if(payment==null){
             throw new RuntimeException("Payment not found");
         }
