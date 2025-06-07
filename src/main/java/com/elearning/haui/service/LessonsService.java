@@ -63,9 +63,6 @@ public class LessonsService {
     //get all
     public List<LessonsDTO> getAllLessonByTeacher(String username,Long chapterId){
         List<Lessons> list=lessonsRepository.getAllLessonsByChapterAndAuthor(chapterId, username);
-        if(list.isEmpty()){
-            throw new RuntimeException("Lessons is null");
-        }
         List<LessonsDTO> listDTO=mapperListLessonsToDTO(list);
         return listDTO;
     }
@@ -89,6 +86,11 @@ public LessonsDTO createLessonsByTeacher(
     
     Chapters chapter = chaptersRepository.findById(chapterId)
         .orElseThrow(() -> new RuntimeException("Không tìm thấy Chapter"));
+
+    if (chapter.getCourse() == null || chapter.getCourse().getAuthor() == null
+            || !username.equals(chapter.getCourse().getAuthor().getUsername())) {
+        throw new IllegalStateException("Chapter not in teacher's course");
+    }    
 
     // check position hợp lệ
     if (Position <= 0) {
@@ -181,6 +183,11 @@ public LessonsDTO updateLessonsByTeacher(
     
     Chapters chapter = chaptersRepository.findById(chapterId)
         .orElseThrow(() -> new RuntimeException("Not found Chapter"));
+    
+    if (chapter.getCourse() == null || chapter.getCourse().getAuthor() == null
+            || !username.equals(chapter.getCourse().getAuthor().getUsername())) {
+        throw new IllegalStateException("Chapter not in teacher's course");
+    }
 
     Lessons lesson = lessonsRepository.getLessonsById(username, chapter.getChapterId(), lessonId);
     if (lesson == null) {
