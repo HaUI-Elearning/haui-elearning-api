@@ -63,9 +63,6 @@ public class LessonsService {
     //get all
     public List<LessonsDTO> getAllLessonByTeacher(String username,Long chapterId){
         List<Lessons> list=lessonsRepository.getAllLessonsByChapterAndAuthor(chapterId, username);
-        if(list.isEmpty()){
-            throw new RuntimeException("Lessons is null");
-        }
         List<LessonsDTO> listDTO=mapperListLessonsToDTO(list);
         return listDTO;
     }
