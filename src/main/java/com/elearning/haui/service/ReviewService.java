@@ -29,7 +29,7 @@ public class ReviewService {
     @Autowired
     EnrollmentRepository enrollmentRepository;
     //mapper review to DTO
-    public List<?> mapperReviewDTO(User user,List<Review> listReview,List<ReviewDTO> listReviewDTO){
+    public List<?> mapperReviewsDTO(User user,List<Review> listReview,List<ReviewDTO> listReviewDTO){
         for(Review rv : listReview){
             boolean isUserReview;
             if (user != null) {
@@ -92,7 +92,7 @@ public class ReviewService {
         }
 
         List<ReviewDTO> listDTO = new ArrayList<>();
-        mapperReviewDTO(user, list, listDTO);
+        mapperReviewsDTO(user, list, listDTO);
 
         ReviewResponse rs = new ReviewResponse(aveRating, listDTO);
         return rs;
@@ -137,7 +137,7 @@ public class ReviewService {
 
     }
     //update review
-    public String UpdateReviewByUser(String Username,Long ReviewID,Double Rating,String Comment){
+    public ReviewDTO UpdateReviewByUser(String Username,Long ReviewID,Double Rating,String Comment){
         User user=userRepository.findByUsername(Username);
         if (user == null) {
             throw new RuntimeException("User not found with username: " + Username);
@@ -152,7 +152,7 @@ public class ReviewService {
         rv.setComment(Comment);
         rv.setCreatedAt(rv.getCreatedAt());
         reviewRepository.save(rv);
-        return "Update review success";
+        return mapReviewToDTO(rv, true);
 
     }
     //delete review
@@ -189,7 +189,7 @@ public class ReviewService {
         if (username != null && !username.trim().isEmpty()) {
             user = userRepository.findByUsername(username);
         }
-        mapperReviewDTO(user,listReview,rs);
+        mapperReviewsDTO(user,listReview,rs);
         return rs;
     }
 
