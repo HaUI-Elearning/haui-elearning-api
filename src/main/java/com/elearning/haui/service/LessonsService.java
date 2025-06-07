@@ -90,6 +90,11 @@ public LessonsDTO createLessonsByTeacher(
     Chapters chapter = chaptersRepository.findById(chapterId)
         .orElseThrow(() -> new RuntimeException("Không tìm thấy Chapter"));
 
+    if (chapter.getCourse() == null || chapter.getCourse().getAuthor() == null
+            || !username.equals(chapter.getCourse().getAuthor().getUsername())) {
+        throw new IllegalStateException("Chapter not in teacher's course");
+    }    
+
     // check position hợp lệ
     if (Position <= 0) {
         throw new IllegalArgumentException("Position must be greater than 0");
@@ -181,6 +186,11 @@ public LessonsDTO updateLessonsByTeacher(
     
     Chapters chapter = chaptersRepository.findById(chapterId)
         .orElseThrow(() -> new RuntimeException("Not found Chapter"));
+    
+    if (chapter.getCourse() == null || chapter.getCourse().getAuthor() == null
+            || !username.equals(chapter.getCourse().getAuthor().getUsername())) {
+        throw new IllegalStateException("Chapter not in teacher's course");
+    }
 
     Lessons lesson = lessonsRepository.getLessonsById(username, chapter.getChapterId(), lessonId);
     if (lesson == null) {
