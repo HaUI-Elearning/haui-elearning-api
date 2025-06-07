@@ -41,16 +41,8 @@ public class ReviewService {
             } else {
                 isUserReview = false;
             }
-            ReviewDTO dto=new ReviewDTO(
-            rv.getReviewId()
-            ,rv.getCourse().getCourseId()
-            ,rv.getUser().getUserId()
-            ,rv.getUser().getName()
-            ,rv.getRating(),
-             rv.getComment(),
-             rv.getCreatedAt(),
-             isUserReview);
-             listReviewDTO.add(dto);
+            ReviewDTO dto=mapReviewToDTO(rv,isUserReview);
+            listReviewDTO.add(dto);
         }
         return listReviewDTO;
     }
@@ -82,9 +74,6 @@ public class ReviewService {
     public ReviewResponse getAllReview(Long courseId, String username) {
         Double aveRating = AVGRatting(courseId);
         List<Review> list = reviewRepository.findReviewsByCourseId(courseId);
-        if(list.isEmpty()) {
-            throw new RuntimeException("Course not have reviews");
-        }
 
         User user = null;
         if (username != null && !username.trim().isEmpty()) {

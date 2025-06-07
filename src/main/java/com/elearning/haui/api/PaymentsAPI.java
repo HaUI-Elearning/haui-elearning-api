@@ -124,7 +124,7 @@ public class PaymentsAPI {
 
         Payment payment = paymentRepository.findByTxnRef(txnRef);
         if (payment == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Không tìm thấy payment");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not found payment");
         }
 
         if ("00".equals(responseCode)) {
@@ -158,13 +158,13 @@ public class PaymentsAPI {
                 listCourseEnroll.add(enrollment);
             }
             enrollmentRepository.saveAll(listCourseEnroll);
-            return ResponseEntity.ok("Thanh toán thành công!");
+            return ResponseEntity.ok("Payment successful!");
         } else {
             paymentService.updatePaymentStatus(payment.getPaymentId(), "failed", responseCode);
             Order order = payment.getOrder();
             order.setStatus("failed");
             orderRepository.save(order);
-            return ResponseEntity.ok("Thanh toán thất bại. Mã lỗi: " + responseCode);
+            return ResponseEntity.ok("Payment failed. Error code:" + responseCode);
         }
     }
 
