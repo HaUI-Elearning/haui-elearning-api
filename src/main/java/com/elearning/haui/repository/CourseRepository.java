@@ -58,4 +58,11 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             """)
     Course getCoursesIdByTeacher(@Param ("authorName") String authorName
                                     , @Param("courseId") Long courseId);
+
+@Query("""
+        select count(c) > 0 from Course c
+        where c.courseId = :courseId and c.author.username = :authorName
+        """)
+        boolean existsByCourseIdAndAuthor(@Param("courseId") Long courseId,
+                                        @Param("authorName") String authorName);
 }

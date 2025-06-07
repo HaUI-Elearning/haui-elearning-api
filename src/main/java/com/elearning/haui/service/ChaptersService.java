@@ -26,12 +26,7 @@ public class ChaptersService implements ChaptersServiceImp {
     public List<ChaptersDTO> mapListChaptersToDTO(List<Chapters> list){
         List<ChaptersDTO>listDTO=new ArrayList<>();
         for(Chapters c : list){
-            ChaptersDTO dto=new ChaptersDTO();
-            dto.setId(c.getChapterId());
-            dto.setTitle(c.getTitle());
-            dto.setDescription(c.getDescription());
-            dto.setCreatedAt(c.getCreatedAt());
-            dto.setPosition(c.getPosition());
+            ChaptersDTO dto=mapChaptersToDTO(c);
             listDTO.add(dto);
         }
         return listDTO;
@@ -49,10 +44,10 @@ public class ChaptersService implements ChaptersServiceImp {
     //get all
     @Override
     public List<ChaptersDTO> getAllChapters(String username, Long CouseId) {
-        List<Chapters> list=chaptersRepository.getAllChaptersByTeacher(CouseId,username);
-         if (list == null || list.isEmpty()) {
-            throw new RuntimeException("You do not have access to this course chapter.");
+        if(!courseRepository.existsByCourseIdAndAuthor(CouseId, username)){
+            throw new RuntimeException("You can not access chapters");
         }
+        List<Chapters> list=chaptersRepository.getAllChaptersByTeacher(CouseId,username);
         List<ChaptersDTO>listDTO=mapListChaptersToDTO(list);
         return listDTO;
     }
