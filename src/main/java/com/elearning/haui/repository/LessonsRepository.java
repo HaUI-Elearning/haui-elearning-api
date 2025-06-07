@@ -16,6 +16,7 @@ public interface LessonsRepository extends JpaRepository<Lessons,Long>{
         JOIN c.course co
         WHERE c.chapterId = :chapterId
         AND co.author.username = :username
+        order by l.position asc
          """)
     List<Lessons> getAllLessonsByChapterAndAuthor(@Param("chapterId") Long chapterId,
                                             @Param("username") String username);

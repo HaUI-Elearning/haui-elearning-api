@@ -126,7 +126,7 @@ public LessonsDTO createLessonsByTeacher(
     if (pdfFile != null && !pdfFile.isEmpty() && pdfFile.getSize() > 100 * 1024 * 1024) {
         throw new IOException("PDF size exceeds 100MB limit");
     }
-
+    
     // Tạo publicId cho video và PDF
     String slug = title.trim().toLowerCase().replaceAll("\\s+", "_");
     String videoPublicId = "lesson_" + chapterId + "_" + slug + "_" + username + "_video";
