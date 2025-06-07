@@ -39,7 +39,7 @@ public void sendOtpEmail(User user, String type) {
     int sentToday = otpTokenRepository.countOtpSentToday(user.getUserId(), type, startOfDay, endOfDay);
 
     if (sentToday >= MAX_OTP_PER_DAY) {
-        throw new RuntimeException("Bạn đã gửi quá số lần OTP cho " + type + " trong ngày.");
+        throw new RuntimeException("You have sent too many OTPs for " + type + " in a day.");
     }
 
     
@@ -50,7 +50,7 @@ public void sendOtpEmail(User user, String type) {
     OtpToken lastOtp = lastOtpOptional.get();
 
     if (lastOtp.getCreatedAt().isAfter(LocalDateTime.now().minusSeconds(OTP_COOLDOWN_SECONDS))) {
-        throw new RuntimeException("Vui lòng đợi ít nhất " + OTP_COOLDOWN_SECONDS + " giây.");
+        throw new RuntimeException("Please wait at least " + OTP_COOLDOWN_SECONDS + " seconds.");
     }
 }
 
