@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -105,66 +106,68 @@ public class PaymentsAPI {
         return ResponseEntity.ok(Map.of("paymentUrl", paymentUrl));
     }
 
-        @GetMapping("/vnpay-return")
+    @GetMapping("/vnpay-return")
+    @Transactional
     public ResponseEntity<?> handleReturn(HttpServletRequest request) throws UnsupportedEncodingException {
         Map<String, String> fields = VNPayUtil.getFieldsFromRequest(request);
-
         String vnp_SecureHash = fields.remove("vnp_SecureHash");
         fields.remove("vnp_SecureHashType");
 
-        String hashData = VNPayUtil.buildHashData(fields);
-        String calculatedHash = VNPayUtil.hmacSHA512(config.getHashSecret(), hashData);
-
-        if (!calculatedHash.equals(vnp_SecureHash)) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Sai chữ ký");
+        if (vnp_SecureHash == null || !vnp_SecureHash.equals(VNPayUtil.hmacSHA512(config.getHashSecret(), VNPayUtil.buildHashData(fields)))) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
         }
 
         String responseCode = request.getParameter("vnp_ResponseCode");
         String txnRef = request.getParameter("vnp_TxnRef");
+        if (responseCode == null || txnRef == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Missing response code or transaction reference");
+        }
 
         Payment payment = paymentRepository.findByTxnRef(txnRef);
         if (payment == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not found payment");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment not found");
+        }
+
+        Order order = payment.getOrder();
+        if (order == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found for this payment");
         }
 
         if ("00".equals(responseCode)) {
             paymentService.updatePaymentStatus(payment.getPaymentId(), "success", responseCode);
-            Order order = payment.getOrder();
             order.setStatus("paid");
             orderRepository.save(order);
-            // delete cart
+
+            // Delete cart if via cart
             if (order.isViaCart()) {
                 Cart cart = cartRepository.findByUser(order.getUser()).orElse(null);
-                if (cart != null) {
+                if (cart != null && order.getOrderDetails() != null) {
                     List<Long> purchasedCourseIds = order.getOrderDetails().stream()
                             .map(detail -> detail.getCourse().getCourseId())
                             .collect(Collectors.toList());
-
-                    cartService.removeCartDetailsByCartAndCourseIds(
-                        cart.getCartId(), purchasedCourseIds
-                    );
+                    cartService.removeCartDetailsByCartAndCourseIds(cart.getCartId(), purchasedCourseIds);
                 }
             }
-            //open course for user
-            List<Enrollment> listCourseEnroll=new ArrayList<>();
-            for(OrderDetail detail : order.getOrderDetails()){
-                Enrollment enrollment=new Enrollment();
-                enrollment.setUser(order.getUser());
-                enrollment.setCourse(detail.getCourse());
-                enrollment.setEnrollmentDate(LocalDateTime.now());
-                Course course=detail.getCourse();
-                course.setSold(course.getSold()+1);
-                courseRepository.save(course);
-                listCourseEnroll.add(enrollment);
+
+            // Open course for user
+            List<Enrollment> listCourseEnroll = new ArrayList<>();
+            for (OrderDetail detail : order.getOrderDetails()) {
+                if (!enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(order.getUser().getUserId(), detail.getCourse().getCourseId())) {
+                    Enrollment enrollment = new Enrollment();
+                    enrollment.setUser(order.getUser());
+                    enrollment.setCourse(detail.getCourse());
+                    enrollment.setEnrollmentDate(LocalDateTime.now());
+                    listCourseEnroll.add(enrollment);
+                    courseRepository.updateSold(detail.getCourse().getCourseId());
+                }
             }
             enrollmentRepository.saveAll(listCourseEnroll);
             return ResponseEntity.ok("Payment successful!");
         } else {
             paymentService.updatePaymentStatus(payment.getPaymentId(), "failed", responseCode);
-            Order order = payment.getOrder();
             order.setStatus("failed");
             orderRepository.save(order);
-            return ResponseEntity.ok("Payment failed. Error code:" + responseCode);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment failed");
         }
     }
 

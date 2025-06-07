@@ -1,6 +1,7 @@
 package com.elearning.haui.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -59,10 +60,13 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     Course getCoursesIdByTeacher(@Param ("authorName") String authorName
                                     , @Param("courseId") Long courseId);
 
-@Query("""
+        @Query("""
         select count(c) > 0 from Course c
         where c.courseId = :courseId and c.author.username = :authorName
         """)
         boolean existsByCourseIdAndAuthor(@Param("courseId") Long courseId,
                                         @Param("authorName") String authorName);
+        @Query("UPDATE Course c SET c.sold = c.sold + 1 WHERE c.courseId = :courseId")
+        @Modifying
+        void updateSold(@Param("courseId") Long courseId);
 }

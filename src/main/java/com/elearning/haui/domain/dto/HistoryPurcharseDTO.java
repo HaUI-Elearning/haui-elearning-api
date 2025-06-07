@@ -9,7 +9,6 @@ import lombok.*;
 @NoArgsConstructor
 public class HistoryPurcharseDTO {
     private Long orderId;
-    private LocalDateTime createdAt;
     private String orderStatus;
     private Double totalAmount;
     private List<CourseRepone> courses;

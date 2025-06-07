@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
@@ -74,46 +75,63 @@ public class EnrollmentService {
 
   // Enroll free course
 
-public CourseRepone EnrollFreeCourse(String Username,Long CourseId){
-    User user=userRepository.findByUsername(Username);
-    if(user==null){
-      throw new RuntimeException("User not found");
-    }
-    Course course=courseRepository.findCourseByCourseId(CourseId);
-    if(course==null){
-      throw new RuntimeException("Course not found");
-    }
-    if(course.getPrice()>0){
-      throw new RuntimeException("This course is not free");
-    }
-    boolean isEnrolled=enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(user.getUserId(), CourseId);
-      if(isEnrolled){
-        throw new RuntimeException("already own the course cannot ,redo this action");
-    }
-    //create order
-    Order order=new Order();
-    order.setUser(user);
-    order.setCreatedAt(LocalDateTime.now());
-    order.setStatus("free");
-    order.setTotalAmount(0.0);
-    order.setViaCart(false);
-    orderRepository.save(order);
-   //orderdetail
-    OrderDetail orderDetail=new OrderDetail();
-    orderDetail.setOrder(order);
-    orderDetail.setCourse(course);
-    orderDetail.setPrice(course.getPrice());
-    orderDetailRepository.save(orderDetail);
-    //open free course for user
-    Enrollment enrollment=new Enrollment();
-    enrollment.setCourse(course);
-    enrollment.setUser(user);
-    enrollment.setEnrollmentDate(LocalDateTime.now());
-    enrollmentRepository.save(enrollment);
-    course.setSold(course.getSold()+1);
-    courseRepository.save(course);
-    CourseRepone repone=mapToCourseDTO(course);
-    
-    return repone;
+  @Transactional
+  public CourseRepone EnrollFreeCourse(String username, Long courseId) {
+      if (username == null || courseId == null) {
+          throw new IllegalArgumentException("Username or course ID cannot be null");
+      }
+
+      User user = userRepository.findByUsername(username);
+      if (user == null) {
+          throw new IllegalArgumentException("User not found");
+      }
+
+      Course course = courseRepository.findCourseByCourseId(courseId);
+      if (course == null) {
+          throw new IllegalArgumentException("Course not found");
+      }
+
+      if (user.getRole() != null && "TEACHER".equals(user.getRole().getName()) 
+              && user.getName() != null && course.getAuthor() != null 
+              && user.getName().equals(course.getAuthor().getName())) {
+          throw new IllegalStateException("You cannot enroll in your own course");
+      }
+
+      if (course.getPrice() > 0) {
+          throw new IllegalStateException("This course is not free");
+      }
+
+      boolean isEnrolled = enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(user.getUserId(), courseId);
+      if (isEnrolled) {
+          throw new IllegalStateException("You already own this course and cannot enroll again");
+      }
+
+      // Create order (optional, consider if needed for free courses)
+      Order order = new Order();
+      order.setUser(user);
+      order.setCreatedAt(LocalDateTime.now());
+      order.setStatus("free");
+      order.setTotalAmount(0.0);
+      order.setViaCart(false);
+      order = orderRepository.save(order);
+
+      // Create order detail 
+      OrderDetail orderDetail = new OrderDetail();
+      orderDetail.setOrder(order);
+      orderDetail.setCourse(course);
+      orderDetail.setPrice(course.getPrice());
+      orderDetailRepository.save(orderDetail);
+
+      // Open free course for user
+      Enrollment enrollment = new Enrollment();
+      enrollment.setCourse(course);
+      enrollment.setUser(user);
+      enrollment.setEnrollmentDate(LocalDateTime.now());
+      enrollmentRepository.save(enrollment);
+
+      // Update sold
+      courseRepository.updateSold(courseId);
+      CourseRepone response = mapToCourseDTO(course);
+      return response;
   }
 }
