@@ -13,16 +13,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.dto.ParticipantsDTO;
 import com.elearning.haui.domain.dto.TeacherCourseDTO;
 import com.elearning.haui.domain.entity.Category;
 import com.elearning.haui.domain.entity.Chapters;
 import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.CourseCategory;
+import com.elearning.haui.domain.entity.Enrollment;
 import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.repository.CategoryRepository;
 import com.elearning.haui.repository.ChaptersRepository;
 import com.elearning.haui.repository.CourseCategoryRepository;
 import com.elearning.haui.repository.CourseRepository;
+import com.elearning.haui.repository.EnrollmentRepository;
 import com.elearning.haui.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +44,9 @@ public class TeacherService {
     UserRepository userRepository;
     @Autowired
     ImgBBService imgBBService;
+
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
 
     //Map ListCourse to DTO
     public List<TeacherCourseDTO> mapperListCourseToDTO(List<Course> listCourse){
@@ -180,6 +186,20 @@ public class TeacherService {
         courseRepository.delete(course);
         return true;
     }
-       
-        
+    
+    //get participants
+    public List<ParticipantsDTO> mapToDTO(List<Enrollment> users){
+        List<ParticipantsDTO> dtos=new ArrayList<>();
+        for(Enrollment u : users){
+            ParticipantsDTO dto=new ParticipantsDTO();
+            dto.setName(u.getUser().getName());
+            dto.setJoinDate(u.getEnrollmentDate());
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+    public List<ParticipantsDTO> getParticipantsByCourseId(String username,Long CourseId){
+        List<Enrollment> users=enrollmentRepository.getParticipantsByCourseId(username,CourseId);
+        return mapToDTO(users);
+    }
 }

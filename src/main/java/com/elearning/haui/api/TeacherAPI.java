@@ -3,6 +3,7 @@ package com.elearning.haui.api;
 import java.io.IOException;
 import java.util.List;
 
+import org.eclipse.tags.shaded.org.apache.regexp.RE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -223,4 +224,13 @@ public class TeacherAPI {
         boolean result=lessonsService.deleteLesson(authentication.getName(), chapterId, lessonId);
         return ResponseEntity.ok(result);
     }
+
+    //get participants
+    @Operation(summary = "Lấy danh sách người tham gia khóa học")
+    @GetMapping("/getParticipants/{CourseId}")
+    public ResponseEntity<?> getParticipants(Authentication authentication,@PathVariable("CourseId") Long CourseId)
+    {
+        return ResponseEntity.ok(teacherService.getParticipantsByCourseId(authentication.getName(), CourseId));
+    }
+
 }

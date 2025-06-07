@@ -49,68 +49,82 @@ public class paymentsService {
     @Autowired
     EnrollmentRepository enrollmentRepository;
     //check course avalable with price than 0
-    public boolean checkCourse(List<Course> listCourse){
-        for(Course c :listCourse){
-            if(c.getPrice()==0){
+    public boolean checkCourse(List<Course> listCourse, User user) {
+        if (listCourse == null || listCourse.isEmpty() || user == null || user.getRole() == null) {
+            return false;
+        }
+        for (Course c : listCourse) {
+            if (c == null || c.getAuthor() == null) {
+                return false;
+            }
+            if ("TEACHER".equals(user.getRole().getName()) && user.getName() != null 
+                && user.getName().equals(c.getAuthor().getName()) || c.getPrice() <= 0) {
                 return false;
             }
         }
         return true;
     }
     @Transactional
-    public Order createOrder(String username, List<Long> courseIds,boolean viaCart) {
-        
+    public Order createOrder(String username, List<Long> courseIds, boolean viaCart) {
+        if (username == null || courseIds == null || courseIds.isEmpty()) {
+            throw new IllegalArgumentException("Username or course IDs cannot be null or empty");
+        }
+
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new IllegalArgumentException("User not found");
         }
-        List<Course> listCourse=courseRepository.findAllById(courseIds);
-        if(!checkCourse(listCourse)){
-            throw new RuntimeException("Cannot make transactions with 0 VND course");
-        }
-        if (viaCart) {
-        Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
 
-        List<Long> cartCourseIds = cart.getCartDetails().stream()
-                .map(cd -> cd.getCourse().getCourseId())
-                .collect(Collectors.toList());
-        
-        if (cartCourseIds.size() != courseIds.size() || !cartCourseIds.containsAll(courseIds)) {
-            throw new RuntimeException("Cart details do not match selected courses");
+        List<Course> listCourse = courseRepository.findAllById(courseIds);
+        if (listCourse == null || listCourse.isEmpty()) {
+            throw new IllegalArgumentException("No courses found for the given IDs");
         }
+
+        if (!checkCourse(listCourse, user)) {
+            throw new IllegalStateException("Cannot make transactions with free or self-authored courses");
         }
-        
+
+        if (viaCart) {
+            Cart cart = cartRepository.findByUser(user)
+                    .orElseThrow(() -> new IllegalStateException("Cart not found"));
+            List<Long> cartCourseIds = cart.getCartDetails() != null
+                    ? cart.getCartDetails().stream()
+                    .map(cd -> cd.getCourse().getCourseId())
+                    .collect(Collectors.toList())
+                    : new ArrayList<>();
+            if (cartCourseIds.size() != courseIds.size() || !cartCourseIds.containsAll(courseIds)) {
+                throw new IllegalStateException("Cart details do not match selected courses");
+            }
+        }
+
         Order order = new Order();
         order.setUser(user);
         order.setCreatedAt(LocalDateTime.now());
         order.setStatus("pending");
         order.setViaCart(viaCart);
-        
+
         double totalAmount = 0;
         List<OrderDetail> orderDetails = new ArrayList<>();
-
         for (Long courseId : courseIds) {
             Course course = courseRepository.findCourseByCourseId(courseId);
             if (course == null) {
-                throw new RuntimeException("Course not found");
+                throw new IllegalArgumentException("Course not found: " + courseId);
             }
-            boolean checkEnroll = enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(user.getUserId(), courseId);
-            if(checkEnroll){
+            if (enrollmentRepository.existsByUser_UserIdAndCourse_CourseId(user.getUserId(), courseId)) {
                 continue;
             }
             OrderDetail detail = new OrderDetail();
-            detail.setOrder(order); 
             detail.setCourse(course);
-            detail.setPrice(course.getPrice());  
+            detail.setPrice(course.getPrice());
             totalAmount += course.getPrice();
             orderDetails.add(detail);
         }
-        if(orderDetails.isEmpty()){
-            throw new RuntimeException("You have purchased that courses");
-        }
-        order.setTotalAmount(totalAmount);
 
+        if (orderDetails.isEmpty()) {
+            throw new IllegalStateException("You have already purchased all selected courses");
+        }
+
+        order.setTotalAmount(totalAmount);
         order = orderRepository.save(order);
 
         for (OrderDetail detail : orderDetails) {
@@ -120,8 +134,8 @@ public class paymentsService {
 
         return order;
     }
-
-     public Payment createPayment(Order order, String txnRef) {
+    @Transactional
+    public Payment createPayment(Order order, String txnRef) {
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setPaymentDate(LocalDateTime.now());
@@ -178,17 +192,16 @@ public class paymentsService {
                     course.getAuthor().getName(),
                     course.getCreatedAt());
     }
-    public List<HistoryPurcharseDTO> mapperListDTO(List<Order> orders) {
+    public List<HistoryPurcharseDTO> mapperListDTO(List<Payment> payments) {
     List<HistoryPurcharseDTO> dtos = new ArrayList<>();
     
    
-    for (Order order : orders) {
-        Payment payment = order.getPayment(); 
+    for (Payment p : payments) { 
         List<Course> courses =new ArrayList<>(); 
-        for(OrderDetail od : order.getOrderDetails()){
+        for(OrderDetail od : p.getOrder().getOrderDetails()){
             courses.add(od.getCourse());
         }
-        HistoryPurcharseDTO dto = mapperDTO(order, payment, courses);
+        HistoryPurcharseDTO dto = mapperDTO(p.getOrder(), p, courses);
         dtos.add(dto);
     }
 
@@ -211,27 +224,13 @@ public class paymentsService {
     //get all by User
     public List<HistoryPurcharseDTO> getAllHistoryPurcharses(String username) {
         List<Payment> listPayment = paymentRepository.findByUser(username);
-        List<Order> orders = new ArrayList<>();
-        for (Payment p : listPayment) {
-            if (p.getOrder() != null) {
-                orders.add(p.getOrder());
-            }
-        }
-
-        return mapperListDTO(orders);
+        return mapperListDTO(listPayment);
     }
 
     //get all by status
     public List<HistoryPurcharseDTO> getAllHistoryPurcharsesByStatus(String username,String status) {
         List<Payment> listPayment = paymentRepository.findByUserAndStatus(username, status);
-        List<Order> orders = new ArrayList<>();
-        for (Payment p : listPayment) {
-            if (p.getOrder() != null) {
-                orders.add(p.getOrder());
-            }
-        }
-
-        return mapperListDTO(orders);
+        return mapperListDTO(listPayment);
     }
     
     // get by id
