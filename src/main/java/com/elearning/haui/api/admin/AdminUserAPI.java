@@ -7,6 +7,9 @@ import com.elearning.haui.domain.response.RestResponse;
 import com.elearning.haui.exception.IdInvalidException;
 import com.elearning.haui.service.RoleService;
 import com.elearning.haui.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -50,7 +53,8 @@ public class AdminUserAPI {
                         savedUser));
     }
 
-    // Padding User
+    
+    @Operation(summary = "Lấy danh sách user phân trang")
     @GetMapping("/users")
     public ResponseEntity<RestResponse<ResultPaginationDTO>> getAllUser(
             @RequestParam(value = "current", defaultValue = "1") String currentOptional,
@@ -66,6 +70,7 @@ public class AdminUserAPI {
     }
 
     // Get User by Id
+    @Operation(summary = "Lấy chi tiết user")
     @GetMapping("/users/{id}")
     public ResponseEntity<RestResponse<User>> getUserById(@PathVariable("id") long id) throws IdInvalidException {
         User fetchUser = this.userService.getUserById(id);

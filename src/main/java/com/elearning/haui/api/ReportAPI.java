@@ -1,5 +1,6 @@
 package com.elearning.haui.api;
 
+import java.nio.file.OpenOption;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,8 @@ import com.elearning.haui.service.CourseService;
 import com.elearning.haui.service.SalesReportService;
 import com.elearning.haui.service.StatisticsService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 @RequestMapping("/api/v1/reports")
 public class ReportAPI {
@@ -29,7 +32,7 @@ public class ReportAPI {
         this.courseService = courseService;
         this.statisticsService = statisticsService;
     }
-
+    @Operation(summary = "Thống kê chung admin")
     @GetMapping("/overview")
     public ResponseEntity<Map<String, Object>> getDashboardStatistics() {
         Map<String, Object> statistics = statisticsService.getDashboardStatistics();
@@ -44,6 +47,7 @@ public class ReportAPI {
     }
 
     // Trả về số lượng khoá thể loại và số lượng khoá trong thể loại đó
+    @Operation(summary = "Số lượng khóa của các danh mục")
     @GetMapping("/sales/course-count")
     public ResponseEntity<Map<String, Integer>> getCourseCountByCategory() {
         // Gọi service để lấy dữ liệu
@@ -59,15 +63,16 @@ public class ReportAPI {
     }
 
     // Trả về danh sách khóa học bán chạy
-   @GetMapping("/sales/top-selling-courses")
-public ResponseEntity<List<CourseSalesDTO>> getTopSellingCourses(
-        @RequestParam(required = false, defaultValue = "10") int limit) {
-    List<CourseSalesDTO> topSellingCourses = salesReportService.getTopSellingCourses(limit);
+    @Operation(summary="Top khóa học trong hệ thống mặc định 10")
+    @GetMapping("/sales/top-selling-courses")
+    public ResponseEntity<List<CourseSalesDTO>> getTopSellingCourses(
+            @RequestParam(required = false, defaultValue = "10") int limit) {
+        List<CourseSalesDTO> topSellingCourses = salesReportService.getTopSellingCourses(limit);
 
-    if (topSellingCourses.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        if (topSellingCourses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+
+        return ResponseEntity.ok(topSellingCourses);
     }
-
-    return ResponseEntity.ok(topSellingCourses);
-}
 }
