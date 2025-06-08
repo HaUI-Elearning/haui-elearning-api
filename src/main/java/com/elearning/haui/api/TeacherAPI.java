@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,9 @@ import com.elearning.haui.service.LessonsService;
 import com.elearning.haui.service.TeacherService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.http.MediaType;
+
 
 @RestController
 @RequestMapping("/api/v1/Teacher")
@@ -65,13 +69,13 @@ public class TeacherAPI {
     }
     //Create Course by teacher
     @Operation(summary = "Tạo khóa học bởi giáo viên")
-    @PostMapping("/Course/add")
+    @PostMapping(value = "/Course/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> CreateCourse(Authentication authentication
        ,@RequestParam String content
        ,@RequestParam String Description
        ,@RequestParam String name
        ,@RequestParam Double price
-       ,@RequestParam MultipartFile file,
+       ,@RequestPart MultipartFile file,
        @RequestParam Long categoryId)
     {
         TeacherCourseDTO result=teacherService.CreateCourseByTeacher(categoryId,authentication.getName(), content, Description, name, price, file);
@@ -79,14 +83,14 @@ public class TeacherAPI {
     }
     //Update Course By Teacher
     @Operation(summary = "Cập nhật khóa học bởi giáo viên")
-    @PutMapping("/Course/Update")
+    @PutMapping(value = "/Course/Update" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> UpdateCourse(Authentication authentication
        ,@RequestParam Long CourseId
        ,@RequestParam String content
        ,@RequestParam String Description
        ,@RequestParam String name
        ,@RequestParam Double price
-       ,@RequestParam(required = false) MultipartFile file
+       ,@RequestPart(value = ("file"),required = false) MultipartFile file
        ,@RequestParam Long CategoryId
     )
     {
@@ -188,13 +192,15 @@ public class TeacherAPI {
 
     //Create Lesson by Teacher
     @Operation(summary = "Tạo Lesson thuộc chapter theo idChapter bởi giáo viên")
-    @PostMapping("/Lesson/add")
+   @PostMapping(value = "/Lesson/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> CreateLesson(
             Authentication authentication,
             @RequestParam Long chapterId,
             @RequestParam String title,
-            @RequestParam (required = false) MultipartFile videoFile,
-            @RequestParam (required = false) MultipartFile pdfFile,
+            @RequestPart(value = "videoFile", required = false) 
+            @Schema(type = "string", format = "binary") MultipartFile videoFile,
+            @RequestPart(value = "pdfFile", required = false) 
+            @Schema(type = "string", format = "binary") MultipartFile pdfFile,
             @RequestParam(required = false) Integer Position) throws IOException {
         int assignedPosition = (Position == null) ? lessonsRepository.countLessonsByCourseAndAuthor(authentication.getName(), chapterId) + 1 : Position;
         LessonsDTO result = lessonsService.createLessonsByTeacher(authentication.getName(), chapterId, title, videoFile, pdfFile, assignedPosition);
@@ -202,14 +208,16 @@ public class TeacherAPI {
     }
     //Update Lesson
     @Operation(summary = "Sửa Lesson thuộc chapter theo idChapter bởi giáo viên")
-    @PutMapping("/Lesson/update/{lessonId}")
+    @PutMapping(value = "/Lesson/update/{lessonId}",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> UpdateLesson(Authentication authentication,
     @RequestParam Long chapterId,
     @PathVariable("lessonId") Long lessonId,
     @RequestParam String title,
     @RequestParam int Position,
-    @RequestParam (required =false) MultipartFile  videoFile,
-    @RequestParam (required =false) MultipartFile pdfFile) throws IOException
+    @RequestPart(value = "videoFile", required = false) 
+    @Schema(type = "string", format = "binary") MultipartFile videoFile,
+    @RequestPart(value = "pdfFile", required = false) 
+    @Schema(type = "string", format = "binary") MultipartFile pdfFile) throws IOException
     {
         LessonsDTO result=lessonsService.updateLessonsByTeacher(authentication.getName(), chapterId, lessonId, title, Position, videoFile, pdfFile);
         return ResponseEntity.ok(result);
