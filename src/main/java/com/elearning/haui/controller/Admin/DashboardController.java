@@ -35,7 +35,7 @@ public class DashboardController {
         double totalRevenue = dashboardService.getTotalRevenue();
 
         // Lấy danh sách sản phẩm bán chạy nhất từ CourseService
-        List<CourseSalesDTO> topSellingCourses = salesReportService.getTopSellingCourses(10);
+        //List<CourseSalesDTO> topSellingCourses = salesReportService.getTopSellingCourses(10);
 
         // Lấy thống kê số lượng khóa học theo thể loại (giả sử trả về
         // Map<String,Integer>)
@@ -56,7 +56,7 @@ public class DashboardController {
         model.addAttribute("courseCount", courseCount);
         model.addAttribute("totalRevenue", totalRevenue);
         model.addAttribute("categoryStatsJson", categoryStatsJson);
-        model.addAttribute("topSellingCourses", topSellingCourses);
+       // model.addAttribute("topSellingCourses", topSellingCourses);
 
         // Trả về tên view (tệp JSP)
         return "/admin/dashboard/charts";

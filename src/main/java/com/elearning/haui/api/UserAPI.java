@@ -217,36 +217,6 @@ public class UserAPI {
     }
 
    
-    // Lấy danh sách người dùng, phân trang
-    @GetMapping("/users")
-    public ResponseEntity<RestResponse<ResultPaginationDTO>> getAllUser(
-            @RequestParam(value = "current", defaultValue = "1") String currentOptional,
-            @RequestParam(value = "pageSize", defaultValue = "10") String pageSizeOptional) throws IdInvalidException {
-
-        int current = Integer.parseInt(currentOptional);
-        int pageSize = Integer.parseInt(pageSizeOptional);
-        Pageable pageable = PageRequest.of(current - 1, pageSize);
-        ResultPaginationDTO result = this.userService.fetchAllUser(pageable);
-
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(new RestResponse<>(HttpStatus.OK.value(), null, "Successfully fetched users", result));
-    }
-
-    // lấy người dùng theo id
-    @GetMapping("/users/{id}")
-    public ResponseEntity<RestResponse<User>> getUserById(@PathVariable("id") long id) throws IdInvalidException {
-        User fetchUser = this.userService.getUserById(id);
-        if (fetchUser == null) {
-            throw new IdInvalidException("User not found");
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new RestResponse<>(
-                        HttpStatus.OK.value(),
-                        null,
-                        "User details retrieved",
-                        fetchUser));
-    }
 
     // lấy thông tin của người dùng
     @GetMapping("/users/my-profile")
@@ -280,24 +250,6 @@ public class UserAPI {
         return ResponseEntity.ok().body(userService.mapToUserDetailsDTO(updatedUser));
     }
 
-    // Xoá người dùng theo id
-    @DeleteMapping("/users/{id}")
-    public ResponseEntity<RestResponse<Void>> deleteUser(@PathVariable("id") long id)
-            throws IdInvalidException {
-        User user = userService.getUserById(id);
-        if (user == null) {
-            throw new IdInvalidException("User not found");
-        }
-
-        userService.handleDeleteUser(id);
-
-        return ResponseEntity.ok(
-                new RestResponse<>(
-                        HttpStatus.OK.value(),
-                        null,
-                        "Successfully deleted user",
-                        null));
-    }
 
     // start learning course
     @GetMapping("/learn/{courseId}")

@@ -3,7 +3,7 @@ package com.elearning.haui.api;
 import java.nio.file.OpenOption;
 import java.util.List;
 import java.util.Map;
-
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,16 +63,17 @@ public class ReportAPI {
     }
 
     // Trả về danh sách khóa học bán chạy
-    @Operation(summary="Top khóa học trong hệ thống mặc định 10")
+    @Operation(summary = "Lấy danh sách khóa học bán chạy nhất (có phân trang)")
     @GetMapping("/sales/top-selling-courses")
-    public ResponseEntity<List<CourseSalesDTO>> getTopSellingCourses(
-            @RequestParam(required = false, defaultValue = "10") int limit) {
-        List<CourseSalesDTO> topSellingCourses = salesReportService.getTopSellingCourses(limit);
+    public ResponseEntity<Page<CourseSalesDTO>> getTopSellingCourses(
+            // 1. Thay đổi tham số: nhận vào page và size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        // 2. Gọi phương thức service đã được cập nhật
+        Page<CourseSalesDTO> coursePage = salesReportService.getTopSellingCourses(page, size);
 
-        if (topSellingCourses.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-
-        return ResponseEntity.ok(topSellingCourses);
+        // 3. Trả về đối tượng Page trực tiếp
+        return ResponseEntity.ok(coursePage);
     }
 }
