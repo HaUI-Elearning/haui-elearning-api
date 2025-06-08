@@ -6,13 +6,18 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Base64;
+import java.util.HashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.dto.CourseMonthlyGrowthDTO;
+import com.elearning.haui.domain.dto.CourseRevenueDTO;
 import com.elearning.haui.domain.dto.ParticipantsDTO;
 import com.elearning.haui.domain.dto.TeacherCourseDTO;
 import com.elearning.haui.domain.entity.Category;
@@ -21,6 +26,7 @@ import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.CourseCategory;
 import com.elearning.haui.domain.entity.Enrollment;
 import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.domain.response.TotalRevenueTeacherRespone;
 import com.elearning.haui.repository.CategoryRepository;
 import com.elearning.haui.repository.ChaptersRepository;
 import com.elearning.haui.repository.CourseCategoryRepository;
@@ -201,5 +207,83 @@ public class TeacherService {
     public List<ParticipantsDTO> getParticipantsByCourseId(String username,Long CourseId){
         List<Enrollment> users=enrollmentRepository.getParticipantsByCourseId(username,CourseId);
         return mapToDTO(users);
+    }
+    //
+    public TotalRevenueTeacherRespone getCourseRevenueByTeacher(String username) {
+        TotalRevenueTeacherRespone respone=new TotalRevenueTeacherRespone();
+        List<Course> courses = courseRepository.getAllCourseByTeacher(username);
+        Double Total=0.0;
+        List<CourseRevenueDTO> dtos = new ArrayList<>();
+        for (Course c : courses) {
+            if(c.getPrice()<=0)
+            {
+                continue;
+            }
+            CourseRevenueDTO dto = new CourseRevenueDTO();
+            dto.setCourseId(c.getCourseId());
+            dto.setCourseName(c.getName());
+            dto.setSold(c.getSold());
+            dto.setRevenue(c.getPrice() * c.getSold());
+            Total+=dto.getRevenue();
+            dtos.add(dto);
+        }
+        respone.setTotalRevennue(Total);
+        respone.setCourses(dtos);
+        return respone;
+    }
+
+    //get 
+    public List<CourseMonthlyGrowthDTO> getMonthlyGrowthForTeacher(String username) {
+       
+        LocalDateTime now = LocalDateTime.now();
+        int currentMonth = now.getMonthValue();
+        int currentYear = now.getYear();
+        LocalDateTime previous = now.minusMonths(1);
+        int prevMonth = previous.getMonthValue();
+        int prevYear = previous.getYear();
+
+        List<Object[]> currentEnrollments = enrollmentRepository.countEnrollmentsByCourseAndMonth(username, currentMonth, currentYear);
+        List<Object[]> prevEnrollments = enrollmentRepository.countEnrollmentsByCourseAndMonth(username, prevMonth, prevYear);
+
+        
+        Map<Long, Integer> currentMap = new HashMap<>();
+        for (Object[] result : currentEnrollments) {
+            Long courseId = (Long) result[0];
+            Integer count = ((Number) result[1]).intValue();
+            currentMap.put(courseId, count);
+        }
+
+        Map<Long, Integer> prevMap = new HashMap<>();
+        for (Object[] result : prevEnrollments) {
+            Long courseId = (Long) result[0];
+            Integer count = ((Number) result[1]).intValue();
+            prevMap.put(courseId, count);
+        }
+
+        
+        List<Course> teacherCourses = courseRepository.getAllCourseByTeacher(username);
+        List<CourseMonthlyGrowthDTO> result = new ArrayList<>();
+
+        for (Course course : teacherCourses) {
+            Long courseId = course.getCourseId();
+            int newStudents = currentMap.getOrDefault(courseId, 0);
+            int prevMonthStudents = prevMap.getOrDefault(courseId, 0);
+            int growth = newStudents - prevMonthStudents;
+            boolean warning = growth < 0; 
+
+            CourseMonthlyGrowthDTO dto = new CourseMonthlyGrowthDTO(
+                courseId,
+                course.getName(),
+                currentMonth,
+                currentYear,
+                newStudents,
+                prevMonthStudents,
+                growth,
+                warning
+            );
+            result.add(dto);
+        }
+
+        return result;
     }
 }

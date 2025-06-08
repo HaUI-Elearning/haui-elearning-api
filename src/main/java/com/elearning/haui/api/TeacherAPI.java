@@ -241,4 +241,20 @@ public class TeacherAPI {
         return ResponseEntity.ok(teacherService.getParticipantsByCourseId(authentication.getName(), CourseId));
     }
 
+    //View revenue by course
+    @Operation(summary = "Xem doanh thu các khóa học của giáo viên")
+    @GetMapping("/getRevenue/Courses")
+    public ResponseEntity<?> getRevenueByCourse(Authentication authentication)
+    {
+        return ResponseEntity.ok(teacherService.getCourseRevenueByTeacher(authentication.getName()));
+    }  
+    
+    //get course statistics by Teacher
+    @Operation(summary = "Thống kê các khóa học của giáo viên")
+    @GetMapping("/getStatistics/Courses")
+    public ResponseEntity<?> getStatisticsCourse(Authentication authentication)
+    {
+        return ResponseEntity.ok(teacherService.getMonthlyGrowthForTeacher(authentication.getName()));
+    }  
+
 }
