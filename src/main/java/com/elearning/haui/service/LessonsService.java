@@ -163,7 +163,7 @@ public LessonsDTO createLessonsByTeacher(
             System.out.println("videoResult is null");
         }
 
-        lesson = lessonsRepository.save(lesson);
+        lessonsRepository.save(lesson);
         LessonsDTO dto = mapLessonToDTO(lesson);
         return dto;
     } catch (Exception e) {
@@ -254,18 +254,18 @@ public LessonsDTO updateLessonsByTeacher(
         System.out.println("=================");
         UploadResultDTO videoResult = videoUploadFuture.get();
         UploadResultDTO pdfResult = pdfUploadFuture.get();
-
         lesson.setVideoUrl(videoResult != null ? videoResult.getUrl() : lesson.getVideoUrl());
         lesson.setPdfUrl(pdfResult != null ? pdfResult.getUrl() : lesson.getPdfUrl());
         lesson.setDuration(videoResult != null ? videoResult.getDuration() : lesson.getDuration());
-
+        lesson.setPosition(position);
+        lesson.setTitle(title);
         if (videoResult != null) {
             System.out.println("Thời gian video: " + videoResult.getDuration());
         } else {
             System.out.println("videoResult is null");
         }
 
-        lesson = lessonsRepository.save(lesson);
+        lessonsRepository.save(lesson);
         LessonsDTO dto = mapLessonToDTO(lesson);
         return dto;
     } catch (Exception e) {
