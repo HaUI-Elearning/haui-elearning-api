@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.elearning.haui.domain.entity.Enrollment;
-import com.elearning.haui.domain.entity.User;
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
   List<Enrollment> findByUser_UserId(Long userId);
@@ -22,5 +21,22 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
             and c.author.username = :username
            """)
   List<Enrollment> getParticipantsByCourseId(@Param("username") String username, @Param("courseId") Long courseId);
+  
+  @Query("""
+      SELECT e FROM Enrollment e
+      JOIN e.course c
+      WHERE c.author.username = :username
+  """)
+  List<Enrollment> getEnrollmentsByTeacher(@Param("username") String username);
+
+  //course statistics by Teacher
+  @Query("SELECT e.course.courseId, COUNT(e) " +
+           "FROM Enrollment e " +
+           "WHERE e.course.author.username = :username " +
+           "AND YEAR(e.enrollmentDate) = :year " +
+           "AND MONTH(e.enrollmentDate) = :month " +
+           "GROUP BY e.course.courseId")
+    List<Object[]> countEnrollmentsByCourseAndMonth(String username, int month, int year);
+
 
 }
