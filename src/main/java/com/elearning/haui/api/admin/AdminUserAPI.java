@@ -2,6 +2,7 @@
 
 import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
+import com.elearning.haui.domain.dto.UserDTO;
 import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.domain.response.RestResponse;
 import com.elearning.haui.exception.IdInvalidException;
@@ -63,7 +64,22 @@ public class AdminUserAPI {
         int current = Integer.parseInt(currentOptional);
         int pageSize = Integer.parseInt(pageSizeOptional);
         Pageable pageable = PageRequest.of(current - 1, pageSize);
-        ResultPaginationDTO result = this.userService.fetchAllUser(pageable);
+        ResultPaginationDTO result = this.userService.fetchAllUserSummaries(pageable);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new RestResponse<>(HttpStatus.OK.value(), null, "Successfully fetched users", result));
+    }
+
+    @Operation(summary = "Lấy danh sách user theo role phân trang")
+    @GetMapping("/users/Role/{RoleId}")
+    public ResponseEntity<RestResponse<ResultPaginationDTO>> getAllUserByRole(
+            @RequestParam(value = "current", defaultValue = "1") String currentOptional,
+            @RequestParam(value = "pageSize", defaultValue = "10") String pageSizeOptional,@PathVariable("RoleId") Long RoleId) throws IdInvalidException {
+
+        int current = Integer.parseInt(currentOptional);
+        int pageSize = Integer.parseInt(pageSizeOptional);
+        Pageable pageable = PageRequest.of(current - 1, pageSize);
+        ResultPaginationDTO result = this.userService.fetchAllUserByRole(pageable,RoleId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new RestResponse<>(HttpStatus.OK.value(), null, "Successfully fetched users", result));
@@ -72,8 +88,8 @@ public class AdminUserAPI {
     // Get User by Id
     @Operation(summary = "Lấy chi tiết user")
     @GetMapping("/users/{id}")
-    public ResponseEntity<RestResponse<User>> getUserById(@PathVariable("id") long id) throws IdInvalidException {
-        User fetchUser = this.userService.getUserById(id);
+    public ResponseEntity<?> getUserById(@PathVariable("id") long id) throws IdInvalidException {
+        UserDTO fetchUser = this.userService.getUserById(id);
         if (fetchUser == null) {
             throw new IdInvalidException("User not found");
         }

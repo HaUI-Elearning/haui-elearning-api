@@ -20,8 +20,9 @@ public class SalesReportService {
     }
 
     // Phương thức lấy danh sách khóa học bán chạy
-    public List<CourseSalesDTO> getTopSellingCourses(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
+    public Page<CourseSalesDTO> getTopSellingCourses(int page, int size) {
+        // Tạo đối tượng Pageable từ page và size nhận được
+        Pageable pageable = PageRequest.of(page, size);
         return orderDetailRepository.findTopSellingCourses(pageable);
     }
 }

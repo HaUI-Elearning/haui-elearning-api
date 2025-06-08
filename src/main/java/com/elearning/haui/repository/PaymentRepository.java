@@ -1,5 +1,6 @@
 package com.elearning.haui.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -43,10 +44,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
 
     @Query("""
-            select sum(p.totalAmount) from Payment p
-                    where MONTH(p.paymentDate)=:month
-                    and YEAR(p.paymentDate) = :year 
-                    and p.status='success'
-                """)
-    Double getMonthlyRevenue( int month,int year);
-}
+        select sum(p.totalAmount) from Payment p
+        where p.status = 'success'
+        and p.paymentDate BETWEEN :startDate AND :endDate
+        """)
+    Double getMonthlyRevenue(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+    }

@@ -71,26 +71,26 @@ public class UserController {
 
     @RequestMapping("/admin/user/{id}")
     public String getUserDetailPage(Model model, @PathVariable long id) {
-        User user = this.userService.getUserById(id);
+       // User user = this.userService.getUserById(id);
         List<Course> courses = this.userService.getCourseEnrollment(id);
-        model.addAttribute("user", user);
+        //model.addAttribute("user", user);
         model.addAttribute("courses", courses);
         return "admin/user/detail";
     }
 
     @GetMapping("/admin/user/update/{id}")
     public String updateUserPage(Model model, @PathVariable long id) {
-        User currentUser = this.userService.getUserById(id);
-        model.addAttribute("updateUser", currentUser);
+        //User currentUser = this.userService.getUserById(id);
+       // model.addAttribute("updateUser", currentUser);
         return "admin/user/update";
     }
 
     @PostMapping("/admin/user/update")
     public String updateUser(Model model, @ModelAttribute("updateUser") User updateUser) {
-        User currentUser = this.userService.getUserById(updateUser.getUserId());
-        currentUser.setIntroduce(updateUser.getIntroduce());
-        currentUser.setName(updateUser.getName());
-        userService.handleSaveUser(currentUser);
+        //User currentUser = this.userService.getUserById(updateUser.getUserId());
+        //currentUser.setIntroduce(updateUser.getIntroduce());
+        //currentUser.setName(updateUser.getName());
+        //userService.handleSaveUser(currentUser);
         return "redirect:/admin/user";
     }
 

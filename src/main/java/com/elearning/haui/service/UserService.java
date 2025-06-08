@@ -26,6 +26,7 @@ import com.elearning.haui.domain.dto.FavoriteCourseDTO;
 import com.elearning.haui.domain.dto.Meta;
 import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
+import com.elearning.haui.domain.dto.UserDTO;
 import com.elearning.haui.domain.dto.UserDetailsDTO;
 import com.elearning.haui.repository.RoleRepository;
 import com.elearning.haui.repository.UserRepository;
@@ -60,8 +61,8 @@ public class UserService {
         return this.userRepository.findByEmail(email);
     }
 
-    public User getUserById(long id) {
-        return this.userRepository.findById(id);
+    public UserDTO getUserById(long id) {
+        return this.userRepository.getUserDetailByAdmin(id);
     }
 
     public void handleDeleteUser(long id) {
@@ -113,19 +114,38 @@ public class UserService {
         return userRepository.count();
     }
 
-    public ResultPaginationDTO fetchAllUser(Pageable pageable) {
-        Page<User> pageUser = this.userRepository.findAll(pageable);
+    public ResultPaginationDTO fetchAllUserSummaries(Pageable pageable) {
+        
+        Page<UserDTO> userPage = userRepository.findUserSummaries(pageable);
+
         ResultPaginationDTO rs = new ResultPaginationDTO();
         Meta mt = new Meta();
 
-        mt.setPage(pageUser.getNumber() + 1);
-        mt.setPageSize(pageUser.getSize());
-
-        mt.setPages(pageUser.getTotalPages());
-        mt.setTotal(pageUser.getTotalElements());
+        mt.setPage(userPage.getNumber() + 1);
+        mt.setPageSize(userPage.getSize());
+        mt.setPages(userPage.getTotalPages());
+        mt.setTotal(userPage.getTotalElements());
 
         rs.setMeta(mt);
-        rs.setResult(pageUser.getContent());
+        rs.setResult(userPage.getContent()); 
+
+        return rs;
+    }
+
+    public ResultPaginationDTO fetchAllUserByRole(Pageable pageable,Long RoleId) {
+        
+        Page<UserDTO> userPage = userRepository.findUsersByRole(pageable,RoleId);
+
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        Meta mt = new Meta();
+
+        mt.setPage(userPage.getNumber() + 1);
+        mt.setPageSize(userPage.getSize());
+        mt.setPages(userPage.getTotalPages());
+        mt.setTotal(userPage.getTotalElements());
+
+        rs.setMeta(mt);
+        rs.setResult(userPage.getContent()); 
 
         return rs;
     }
