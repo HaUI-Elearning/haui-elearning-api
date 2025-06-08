@@ -10,6 +10,9 @@ import com.elearning.haui.exception.IdInvalidException;
 import com.elearning.haui.repository.CourseRepository;
 import com.elearning.haui.repository.UserRepository;
 import com.elearning.haui.service.*;
+
+import io.swagger.v3.oas.annotations.Operation;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -38,6 +41,7 @@ public class AdminCourseAPI {
     }
 
     //Get all course
+    @Operation(summary = "Lấy danh sách khóa học phân trang")
     @GetMapping("")
     public ResponseEntity<ResultPaginationDTO> getAllCourses(
             @RequestParam(value = "current", defaultValue = "1") String currentOptional,

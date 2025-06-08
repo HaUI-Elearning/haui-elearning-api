@@ -1,5 +1,6 @@
 package com.elearning.haui.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,6 +38,14 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
            "AND MONTH(e.enrollmentDate) = :month " +
            "GROUP BY e.course.courseId")
     List<Object[]> countEnrollmentsByCourseAndMonth(String username, int month, int year);
+
+    // Đếm tổng số lượt ghi danh của một khóa học cho đến cuối một tháng/năm cụ thể
+@Query("SELECT e.course.courseId, COUNT(e) " +
+       "FROM Enrollment e " +
+       "WHERE e.course.author.username = :username " +
+       "AND e.enrollmentDate <= :endDate " +
+       "GROUP BY e.course.courseId")
+List<Object[]> countTotalEnrollmentsUpToDate(@Param("username") String username, @Param("endDate") LocalDateTime endDate);
 
 
 }

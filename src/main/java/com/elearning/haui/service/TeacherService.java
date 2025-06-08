@@ -222,6 +222,8 @@ public class TeacherService {
             CourseRevenueDTO dto = new CourseRevenueDTO();
             dto.setCourseId(c.getCourseId());
             dto.setCourseName(c.getName());
+            dto.setPrice(c.getPrice());
+            dto.setStar(c.getStar());
             dto.setSold(c.getSold());
             dto.setRevenue(c.getPrice() * c.getSold());
             Total+=dto.getRevenue();
@@ -234,56 +236,64 @@ public class TeacherService {
 
     //get 
     public List<CourseMonthlyGrowthDTO> getMonthlyGrowthForTeacher(String username) {
-       
         LocalDateTime now = LocalDateTime.now();
-        int currentMonth = now.getMonthValue();
-        int currentYear = now.getYear();
-        LocalDateTime previous = now.minusMonths(1);
-        int prevMonth = previous.getMonthValue();
-        int prevYear = previous.getYear();
+        // ngày cuối cùng của tháng hiện tại và tháng trước
+        LocalDateTime endOfCurrentMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59);
+        LocalDateTime endOfPreviousMonth = now.minusMonths(1).withDayOfMonth(now.minusMonths(1).toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59);
 
-        List<Object[]> currentEnrollments = enrollmentRepository.countEnrollmentsByCourseAndMonth(username, currentMonth, currentYear);
-        List<Object[]> prevEnrollments = enrollmentRepository.countEnrollmentsByCourseAndMonth(username, prevMonth, prevYear);
-
+        // Lấy tổng học viên 
+        List<Object[]> totalEnrollmentsCurrent = enrollmentRepository.countTotalEnrollmentsUpToDate(username, endOfCurrentMonth);
+        List<Object[]> totalEnrollmentsPrevious = enrollmentRepository.countTotalEnrollmentsUpToDate(username, endOfPreviousMonth);
         
-        Map<Long, Integer> currentMap = new HashMap<>();
-        for (Object[] result : currentEnrollments) {
-            Long courseId = (Long) result[0];
-            Integer count = ((Number) result[1]).intValue();
-            currentMap.put(courseId, count);
-        }
+        // Lấy số học viên mới trong tháng này
+        List<Object[]> newEnrollmentsThisMonth = enrollmentRepository.countEnrollmentsByCourseAndMonth(username, now.getMonthValue(), now.getYear());
 
-        Map<Long, Integer> prevMap = new HashMap<>();
-        for (Object[] result : prevEnrollments) {
-            Long courseId = (Long) result[0];
-            Integer count = ((Number) result[1]).intValue();
-            prevMap.put(courseId, count);
-        }
+        Map<Long, Integer> totalCurrentMap = new HashMap<>();
+        totalEnrollmentsCurrent.forEach(r -> totalCurrentMap.put((Long) r[0], ((Number) r[1]).intValue()));
 
-        
+        Map<Long, Integer> totalPrevMap = new HashMap<>();
+        totalEnrollmentsPrevious.forEach(r -> totalPrevMap.put((Long) r[0], ((Number) r[1]).intValue()));
+
+        Map<Long, Integer> newStudentsMap = new HashMap<>();
+        newEnrollmentsThisMonth.forEach(r -> newStudentsMap.put((Long) r[0], ((Number) r[1]).intValue()));
+
         List<Course> teacherCourses = courseRepository.getAllCourseByTeacher(username);
         List<CourseMonthlyGrowthDTO> result = new ArrayList<>();
+        
+        final int DAYS_THRESHOLD = 30; 
 
         for (Course course : teacherCourses) {
             Long courseId = course.getCourseId();
-            int newStudents = currentMap.getOrDefault(courseId, 0);
-            int prevMonthStudents = prevMap.getOrDefault(courseId, 0);
-            int growth = newStudents - prevMonthStudents;
-            boolean warning = growth < 0; 
+            
+            int totalStudents = totalCurrentMap.getOrDefault(courseId, 0);
+            boolean warning = false; 
 
-            CourseMonthlyGrowthDTO dto = new CourseMonthlyGrowthDTO(
+            // check cảnh báo 
+            if (course.getCreatedAt() != null) {
+                long daysSinceCreation = java.time.temporal.ChronoUnit.DAYS.between(course.getCreatedAt(), LocalDateTime.now());
+                
+                if (daysSinceCreation > DAYS_THRESHOLD && totalStudents == 0) {
+                    warning = true;
+                }
+            }
+
+        int newStudents = newStudentsMap.getOrDefault(courseId, 0);
+        int totalStudentsLastMonth = totalPrevMap.getOrDefault(courseId, 0);
+        int growth = totalStudents - totalStudentsLastMonth;
+        
+        CourseMonthlyGrowthDTO dto = new CourseMonthlyGrowthDTO(
                 courseId,
                 course.getName(),
-                currentMonth,
-                currentYear,
+                now.getMonthValue(),
+                now.getYear(),
                 newStudents,
-                prevMonthStudents,
+                totalStudentsLastMonth, 
                 growth,
-                warning
-            );
-            result.add(dto);
-        }
+                warning 
+        );
+        result.add(dto);
+    }
 
-        return result;
+    return result;
     }
 }

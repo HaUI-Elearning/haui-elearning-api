@@ -7,6 +7,9 @@ import com.elearning.haui.domain.entity.Order;
 import com.elearning.haui.domain.response.RestResponse;
 import com.elearning.haui.exception.IdInvalidException;
 import com.elearning.haui.service.OrderService;
+
+import io.swagger.v3.oas.annotations.Operation;
+
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,8 +30,8 @@ public class AdminOrderAPI {
         this.orderService = orderService;
     }
 
-    //Padding order
-    @GetMapping("")
+    @Operation(summary = "Lấy danh sách Order của user phân trang")
+    @GetMapping("/getAll")
     public ResponseEntity<?> getAllOrders(
             @RequestParam(value = "current", defaultValue = "1") String currentOptional,
             @RequestParam(value = "pageSize", defaultValue = "10") String pageSizeOptional
@@ -42,6 +45,7 @@ public class AdminOrderAPI {
     }
 
     //Get order detial by id
+    @Operation(summary = "Lấy Chi tiết Order của user ")
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderById(
             @PathVariable long id

@@ -40,4 +40,13 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         and p.paymentId = :paymentId
     """)
     Payment findByUsernameAndPaymentid(@Param("username") String username, @Param("paymentId") Long paymentId);
+
+
+    @Query("""
+            select sum(p.totalAmount) from Payment p
+                    where MONTH(p.paymentDate)=:month
+                    and YEAR(p.paymentDate) = :year 
+                    and p.status='success'
+                """)
+    Double getMonthlyRevenue( int month,int year);
 }
