@@ -89,17 +89,8 @@ public class AdminUserAPI {
     @Operation(summary = "Lấy chi tiết user")
     @GetMapping("/users/{id}")
     public ResponseEntity<?> getUserById(@PathVariable("id") long id) throws IdInvalidException {
-        UserDTO fetchUser = this.userService.getUserById(id);
-        if (fetchUser == null) {
-            throw new IdInvalidException("User not found");
-        }
 
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new RestResponse<>(
-                        HttpStatus.OK.value(),
-                        null,
-                        "User details retrieved",
-                        fetchUser));
+        return ResponseEntity.ok(userService.getUserById(id));
     }
 
     //Update user

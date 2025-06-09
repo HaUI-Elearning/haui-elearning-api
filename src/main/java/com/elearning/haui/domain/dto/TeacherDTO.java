@@ -2,12 +2,11 @@ package com.elearning.haui.domain.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDTO {
+public class TeacherDTO {
     private long userId;
     private String name;
     private String email;
@@ -15,4 +14,5 @@ public class UserDTO {
     private LocalDateTime createdAt;
     private boolean emailVerified;
     private List<CourseRepone> listEnrollCourse;
+    private List<CourseRepone> listCreatedCourse;
 }

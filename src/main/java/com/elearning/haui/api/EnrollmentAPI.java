@@ -13,6 +13,8 @@ import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.dto.CourseRepone;
 import com.elearning.haui.service.EnrollmentService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 import java.util.List;
 
 @RestController
@@ -21,12 +23,13 @@ public class EnrollmentAPI {
 
     @Autowired
     private EnrollmentService enrollmentService;
-
+    @Operation(summary="Lấy danh sách khóa học đã tham gia của User")
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<CourseRepone>> getCoursesUserIsEnrolledIn(@PathVariable Long userId) {
         List<CourseRepone> courses = enrollmentService.getCoursesByUserId(userId);
         return ResponseEntity.ok(courses);
     }
+    @Operation(summary = "Ghi danh khóa học free")
     @PostMapping("/{CourseId}")
     public ResponseEntity<?> EnrollFreeCourse(Authentication authentication,@PathVariable("CourseId") Long CourseId){
         return ResponseEntity.ok(enrollmentService.EnrollFreeCourse(authentication.getName(), CourseId));

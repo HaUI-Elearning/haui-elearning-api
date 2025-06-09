@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -124,7 +125,6 @@ public class CourseService {
             throw new IllegalArgumentException("Course cannot be null");
         }
 
-        Double timeCourse = 0.0;
         List<ChaptersDTO> listChapterDTO = new ArrayList<>();
         Set<Chapters> chapters = course.getListChapters();
         if (chapters != null) {
@@ -147,7 +147,6 @@ public class CourseService {
                         dto.setTitle(x.getTitle());
                         dto.setChapterId(c.getChapterId());
                         dto.setCourseId(course.getCourseId());
-                        timeCourse += (x.getDuration() != null ? x.getDuration() : 0.0);
                         listLessonDTO.add(dto);
                     }
                     listLessonDTO.sort(Comparator.comparing(LessonsDTO::getPosition));
@@ -157,9 +156,6 @@ public class CourseService {
             }
             listChapterDTO.sort(Comparator.comparing(ChaptersDTO::getPosition));
         }
-
-        Double hoursCourse = timeCourse / 3600;
-        Double hour = Math.round(hoursCourse * 10) / 10.0;
 
         boolean isEnrolled = false;
         boolean isAuthor = false;
@@ -180,7 +176,7 @@ public class CourseService {
             course.getDescription(),
             course.getContents(),
             course.getStar(),
-            hour,
+            course.getHour(),
             course.getPrice(),
             course.getSold(),
             (course.getAuthor() != null ? course.getAuthor().getName() : "Unknown"),
@@ -257,13 +253,43 @@ public class CourseService {
     }
 
     private List<Course> filterByHourRange(List<Course> courses, String hourRange) {
-        switch (hourRange) {
-            case "3-6": return courses.stream().filter(course -> course.getHour() >= 3 && course.getHour() < 6).collect(Collectors.toList());
-            case "6-9": return courses.stream().filter(course -> course.getHour() >= 6 && course.getHour() < 9).collect(Collectors.toList());
-            case "9-12": return courses.stream().filter(course -> course.getHour() >= 9 && course.getHour() < 12).collect(Collectors.toList());
-            case "more": return courses.stream().filter(course -> course.getHour() >= 12).collect(Collectors.toList());
-            default: return courses;
+        if (hourRange == null || hourRange.isEmpty())
+            return courses;
+
+        Set<Course> filterCourses = new HashSet<>();
+
+        String[] hours = hourRange.split(",");
+        for (String hour : hours) {
+            switch (hour.trim()) {
+                case "0-3":
+                    filterCourses.addAll(courses.stream()
+                            .filter(course -> course.getHour() >=0.1 && course.getHour() < 3)
+                            .collect(Collectors.toList()));
+                    break;
+                case "3-6":
+                    filterCourses.addAll(courses.stream()
+                            .filter(course -> course.getHour() >= 3 && course.getHour() < 6)
+                            .collect(Collectors.toList()));
+                    break;
+                case "6-9":
+                    filterCourses.addAll(courses.stream()
+                            .filter(course -> course.getHour() >= 6 && course.getHour() < 9)
+                            .collect(Collectors.toList()));
+                    break;
+                case "9-12":
+                    filterCourses.addAll(courses.stream()
+                            .filter(course -> course.getHour() >= 9 && course.getHour() < 12)
+                            .collect(Collectors.toList()));
+                    break;
+                case "more":
+                    filterCourses.addAll(courses.stream()
+                            .filter(course -> course.getHour() >= 12)
+                            .collect(Collectors.toList()));
+                    break;
+            }
         }
+
+        return new ArrayList<>(filterCourses);
     }
 
     private List<Course> filterByPrice(List<Course> courses, double minPrice, double maxPrice) {

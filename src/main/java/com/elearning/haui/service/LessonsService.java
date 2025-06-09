@@ -13,11 +13,15 @@ import org.springframework.web.multipart.MultipartFile;
 import com.elearning.haui.domain.dto.LessonsDTO;
 import com.elearning.haui.domain.dto.UploadResultDTO;
 import com.elearning.haui.domain.entity.Chapters;
+import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.Lessons;
 import com.elearning.haui.repository.ChaptersRepository;
+import com.elearning.haui.repository.CourseRepository;
 import com.elearning.haui.repository.LessonsRepository;
 @Service
 public class LessonsService {
+    @Autowired
+    CourseRepository courseRepository;
     @Autowired
     LessonsRepository lessonsRepository;
     @Autowired
@@ -75,6 +79,28 @@ public class LessonsService {
         LessonsDTO dto=mapLessonToDTO(lesson);
         return dto;
     }
+
+    public void CaculalateHourseForCourse(Course course)
+    {
+        if(course==null)
+        {
+            return;
+        }
+        Double timeCourse =0.0;
+        for(Chapters ct : course.getListChapters())
+        {
+            for(Lessons l : ct.getListLessons())
+            {
+              timeCourse += (l.getDuration() != null ? l.getDuration() : 0.0);
+            }
+        }
+       
+        Double hoursCourse = timeCourse / 3600;
+        Double hour = Math.round(hoursCourse * 10) / 10.0;
+        course.setHour(hour);
+        courseRepository.save(course);
+    }
+
     //create Lesson
     @Transactional(rollbackFor = Exception.class)
 public LessonsDTO createLessonsByTeacher(
@@ -162,8 +188,8 @@ public LessonsDTO createLessonsByTeacher(
         } else {
             System.out.println("videoResult is null");
         }
-
-        lessonsRepository.save(lesson);
+        Course course=courseRepository.findById(chapter.getCourse().getCourseId()).orElseThrow(()->new RuntimeException("Not found course"));
+        CaculalateHourseForCourse(course);
         LessonsDTO dto = mapLessonToDTO(lesson);
         return dto;
     } catch (Exception e) {
@@ -264,8 +290,9 @@ public LessonsDTO updateLessonsByTeacher(
         } else {
             System.out.println("videoResult is null");
         }
-
         lessonsRepository.save(lesson);
+        Course course=courseRepository.findById(chapter.getCourse().getCourseId()).orElseThrow(()->new RuntimeException("Not found course"));
+        CaculalateHourseForCourse(course);
         LessonsDTO dto = mapLessonToDTO(lesson);
         return dto;
     } catch (Exception e) {
@@ -282,6 +309,9 @@ public boolean deleteLesson(String username, Long chapterId, Long lessonId) {
 
     int deletedPosition = lesson.getPosition();
     lessonsRepository.delete(lesson);
+    Chapters chapter=chaptersRepository.findById(chapterId).orElseThrow(()-> new RuntimeException("Chapter not found"));
+    Course course=courseRepository.findById(chapter.getCourse().getCourseId()).orElseThrow(()->new RuntimeException("Not found course"));
+    CaculalateHourseForCourse(course);
 
     // set olds position 
     List<Lessons> remainingLessons = lessonsRepository.findByChapterId(chapterId);
