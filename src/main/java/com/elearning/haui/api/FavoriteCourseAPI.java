@@ -63,7 +63,7 @@ public class FavoriteCourseAPI {
         Course course = courseService.getCourseById(courseId);
 
         if (course == null) {
-            new Exception("Course not found");
+           throw new RuntimeException("Course not found");
         }
         FavoriteCourse favoriteCourse= favoriteCourseRepository.findByCourseIdAndUserId(courseId,user.getUserId());
         if(favoriteCourse!=null){

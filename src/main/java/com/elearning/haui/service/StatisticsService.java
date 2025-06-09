@@ -2,6 +2,7 @@ package com.elearning.haui.service;
 
 import com.elearning.haui.domain.dto.UserGrowthDTO;
 import com.elearning.haui.enums.OrderStatus;
+import com.elearning.haui.repository.CourseRepository;
 import com.elearning.haui.repository.OrderRepository;
 import com.elearning.haui.repository.PaymentRepository;
 import com.elearning.haui.repository.UserRepository;
@@ -18,12 +19,16 @@ import java.util.Map;
 @Service
 public class StatisticsService {
 
+    @Autowired
+    CourseRepository courseRepository;
+
     @Autowired 
     PaymentRepository paymentRepository;
     @Autowired
     UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final DashboardService dashboardService;
+
 
     public StatisticsService(OrderRepository orderRepository, DashboardService dashboardService) {
         this.orderRepository = orderRepository;
@@ -65,7 +70,10 @@ public class StatisticsService {
         long newTeachersCount = userRepository.countNewTeachersBetween(startDate, endDate);
         stats.put("newUsersCount", newUsersCount);
         stats.put("newTeachersCount",newTeachersCount);
-
+        
+        stats.put("TotalPendingCourse",courseRepository.countCourseByStatus("pending") );
+        stats.put("TotalApprovedCourse",courseRepository.countCourseByStatus("approved") );
+        stats.put("TotalRejectedCourse",courseRepository.countCourseByStatus("rejected") );
         return stats;
     }
 

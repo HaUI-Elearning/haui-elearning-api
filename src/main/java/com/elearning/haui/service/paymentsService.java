@@ -57,6 +57,10 @@ public class paymentsService {
             if (c == null || c.getAuthor() == null) {
                 return false;
             }
+            if(c.getApprovalStatus().equals("pending")||c.getApprovalStatus().equals("rejected"))
+            {
+               return false;
+            }
             if ("TEACHER".equals(user.getRole().getName()) && user.getName() != null 
                 && user.getName().equals(c.getAuthor().getName()) || c.getPrice() <= 0) {
                 return false;
@@ -81,7 +85,7 @@ public class paymentsService {
         }
 
         if (!checkCourse(listCourse, user)) {
-            throw new IllegalStateException("Cannot make transactions with free or self-authored courses");
+            throw new IllegalStateException("Cannot make transactions with free or self-authored courses or course not approved");
         }
 
         if (viaCart) {

@@ -80,6 +80,10 @@ public class CartService {
         if(course.getPrice()==0){
             throw new RuntimeException("cannot add course to Cart with price 0 VND");
         }
+        if(course.getApprovalStatus().equals("pending")||course.getApprovalStatus().equals("rejected"))
+        {
+            throw new RuntimeException("This course is not approved.");
+        }
         // Kiểm tra giỏ hàng
         Cart cart = cartRepository.findByUser(user).orElse(null);
 

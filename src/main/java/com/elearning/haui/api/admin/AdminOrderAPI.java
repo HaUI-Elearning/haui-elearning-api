@@ -30,16 +30,17 @@ public class AdminOrderAPI {
         this.orderService = orderService;
     }
 
-    @Operation(summary = "Lấy danh sách Order của user phân trang")
+    @Operation(summary = "Lấy danh sách Order của user phân trang theo status paid/failed,không truyền mặc định get all")
     @GetMapping("/getAll")
     public ResponseEntity<?> getAllOrders(
             @RequestParam(value = "current", defaultValue = "1") String currentOptional,
             @RequestParam(value = "pageSize", defaultValue = "10") String pageSizeOptional
+            ,@RequestParam (required = false) String Status
     ){
         int current = Integer.parseInt(currentOptional);
         int pageSize = Integer.parseInt(pageSizeOptional);
         Pageable pageable = PageRequest.of(current -1, pageSize);
-        ResultPaginationDTO result = orderService.fetchAllCourses(pageable);
+        ResultPaginationDTO result = orderService.fetchAllCourses(pageable,Status);
 
         return ResponseEntity.ok(result);
     }

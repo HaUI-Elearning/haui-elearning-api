@@ -81,8 +81,15 @@ public class OrderService {
                 course.getCreatedAt());
     }
 
-    public ResultPaginationDTO fetchAllCourses(Pageable pageable) {
-        Page<Order> pageOrders = this.orderRepository.findAll(pageable);
+    public ResultPaginationDTO fetchAllCourses(Pageable pageable,String status) {
+        Page<Order> pageOrders=null;
+        if(status==null){
+            pageOrders = orderRepository.findAll(pageable);
+        }
+        else{
+            pageOrders=orderRepository.getOdersByStatus(status, pageable);
+        }
+    
         ResultPaginationDTO rs = new ResultPaginationDTO();
         Meta meta = new Meta();
 
@@ -109,8 +116,40 @@ public class OrderService {
         dto.setOrderDate(order.getCreatedAt());
         dto.setOrderStatus(order.getStatus());
         dto.setTotalAmount(order.getTotalAmount());
+        List<Course> Courses=new ArrayList<>();
+        for(OrderDetail od : order.getOrderDetails())
+        {
+            Courses.add(od.getCourse());
+        }
+        List<CourseRepone> CoursesRespone=mapToCoursesDTO(Courses);
+        dto.setCoursesInOrder(CoursesRespone);
         return dto;
     }
+    //map courseRespone
+     public List<CourseRepone> mapToCoursesDTO(List<Course> listCourses){
+        List<CourseRepone> dtos=new ArrayList<>();
+        for(Course c : listCourses){
+            CourseRepone dto=mapToCourseDTO(c);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+     //map courseRespone
+    public CourseRepone mapToCourseDTO(Course course) {
+    return new CourseRepone(
+                    course.getCourseId(),
+                    course.getName(),
+                    course.getThumbnail(),
+                    course.getDescription(),
+                    course.getContents(),
+                    course.getStar(),
+                    course.getHour(),
+                    course.getPrice(),
+                    course.getSold(),
+                    course.getAuthor().getName(),
+                    course.getCreatedAt());
+    }
+
 
     @Transactional
     public void updateOrderStatus(Long id, String status) {

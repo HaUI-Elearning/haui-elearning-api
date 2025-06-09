@@ -54,12 +54,38 @@ public class TeacherAPI {
 
     //Courses
     //Get course by Teacher
-    @Operation(summary = "Lấy tất cả khóa học do giáo viên tạo")
+    @Operation(summary = "Lấy tất cả khóa học do giáo viên tạo,nếu không truyền status mặc định get all")
     @GetMapping("/getAll/Courses")
-    public ResponseEntity<?> getAllCourses(Authentication authentication){
-        List<?> result=teacherService.getAllCourseByTeacher(authentication.getName());
+    public ResponseEntity<?> getAllCourses(Authentication authentication,@RequestParam(required = false) String Status){
+        Status= (Status != null) ? Status : null;
+        List<?> result=teacherService.getAllCourseByTeacher(authentication.getName(),Status);
         return ResponseEntity.ok(result);
     }
+
+    // send approval request
+    @Operation(summary = "Cập nhật lại khóa học để admin duyệt")
+    @PutMapping(value = "/Course/Update/ToApproval" , consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> UpdateCourseToApproval(Authentication authentication
+       ,@RequestParam Long CourseId
+       ,@RequestParam String content
+       ,@RequestParam String Description
+       ,@RequestParam String name
+       ,@RequestParam Double price
+       ,@RequestPart(value = ("file"),required = false) MultipartFile file
+       ,@RequestParam Long CategoryId
+    )
+    {
+        TeacherCourseDTO result=teacherService.updateAndSendRequestApproval(authentication.getName(), CourseId, content, Description, name, price, file,CategoryId);
+        return ResponseEntity.ok(result);
+    }
+    // get reason reject
+    @Operation(summary = "get lý do bị từ chối duyệt khóa học")
+    @GetMapping("/Course/Reason/Reject")
+    public ResponseEntity<?> getReason(Authentication authentication,@RequestParam Long courseId)
+    {
+        return ResponseEntity.ok(teacherService.getRejectionReason(authentication.getName(), courseId));
+    }
+
     //get course id by teacher
     @Operation(summary = "Lấy Khóa học theo id bởi giáo viên")
     @GetMapping("/getCourse/{courseId}")

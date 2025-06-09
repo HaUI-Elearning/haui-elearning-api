@@ -52,6 +52,15 @@ public class Course {
     @Column(name = "sold")
     private int sold;
 
+    @Column(name = "approval_status")
+    private String approvalStatus;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
     @ManyToOne
     @JoinColumn(name = "author_id")
     @JsonManagedReference

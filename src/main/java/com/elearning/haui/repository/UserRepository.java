@@ -49,7 +49,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT new com.elearning.haui.domain.dto.UserRespone(" +
            "u.userId, u.name, u.email, u.role.name, u.createdAt, u.emailVerified) " +
-           "FROM User u JOIN u.role")
+           "FROM User u JOIN u.role "+
+           "ORDER BY u.userId ASC")
     Page<UserRespone> findUserSummaries(Pageable pageable);
 
     @Query("""

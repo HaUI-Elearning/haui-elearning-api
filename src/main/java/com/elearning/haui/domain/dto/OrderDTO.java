@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,4 +22,5 @@ public class OrderDTO {
     private LocalDateTime orderDate;
     private String orderStatus;
     private Double totalAmount;
+    private List<CourseRepone> CoursesInOrder;
 }

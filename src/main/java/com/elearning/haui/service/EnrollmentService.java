@@ -90,7 +90,10 @@ public class EnrollmentService {
       if (course == null) {
           throw new IllegalArgumentException("Course not found");
       }
-
+      if(course.getApprovalStatus().equals("pending")||course.getApprovalStatus().equals("rejected"))
+        {
+                throw new RuntimeException("This course is not approved.");
+        }
       if (user.getRole() != null && "TEACHER".equals(user.getRole().getName()) 
               && user.getName() != null && course.getAuthor() != null 
               && user.getName().equals(course.getAuthor().getName())) {
