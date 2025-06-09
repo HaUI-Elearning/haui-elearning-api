@@ -375,6 +375,10 @@ public class TeacherService {
     respone.setApprovedCourse(approvedCourses);
     respone.setPendingCourse(pendingCourses);
     respone.setRejectCourse(rejectedCourses);
+    respone.setTotalCourse(teacherCourses.size());
+    respone.setTotalapprovedCourse(approvedCourses.size());
+    respone.setTotalPendingCourse(pendingCourses.size());
+    respone.setTotalRejectCourse(rejectedCourses.size());
     return respone;
     }
 

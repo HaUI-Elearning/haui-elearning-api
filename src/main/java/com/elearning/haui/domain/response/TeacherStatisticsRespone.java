@@ -10,8 +10,12 @@ import lombok.*;
 @Getter
 @Setter
 public class TeacherStatisticsRespone {
-    List<CourseMonthlyGrowthDTO> ListCourseStatistics;
-    List<TeacherCourseDTO> approvedCourse;
-    List<TeacherCourseDTO> RejectCourse;
-    List<TeacherCourseDTO> PendingCourse;
+   private int TotalCourse;
+   private int TotalapprovedCourse;
+   private int TotalRejectCourse;
+   private int TotalPendingCourse;
+   private List<CourseMonthlyGrowthDTO> ListCourseStatistics;
+   private List<TeacherCourseDTO> approvedCourse;
+   private List<TeacherCourseDTO> RejectCourse;
+   private List<TeacherCourseDTO> PendingCourse;
 }
