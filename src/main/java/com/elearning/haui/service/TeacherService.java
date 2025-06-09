@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.elearning.haui.domain.dto.ChaptersDTO;
 import com.elearning.haui.domain.dto.CourseDTO;
 import com.elearning.haui.domain.dto.CourseMonthlyGrowthDTO;
+import com.elearning.haui.domain.dto.CourseRepone;
 import com.elearning.haui.domain.dto.CourseRevenueDTO;
 import com.elearning.haui.domain.dto.ParticipantsDTO;
 import com.elearning.haui.domain.dto.TeacherCourseDTO;
@@ -26,6 +27,7 @@ import com.elearning.haui.domain.entity.Course;
 import com.elearning.haui.domain.entity.CourseCategory;
 import com.elearning.haui.domain.entity.Enrollment;
 import com.elearning.haui.domain.entity.User;
+import com.elearning.haui.domain.response.TeacherStatisticsRespone;
 import com.elearning.haui.domain.response.TotalRevenueTeacherRespone;
 import com.elearning.haui.repository.CategoryRepository;
 import com.elearning.haui.repository.ChaptersRepository;
@@ -296,8 +298,8 @@ public class TeacherService {
         return respone;
     }
 
-    //get 
-    public List<CourseMonthlyGrowthDTO> getMonthlyGrowthForTeacher(String username) {
+    //get TeacherStatisticsRespone
+    public TeacherStatisticsRespone getMonthlyGrowthForTeacher(String username) {
         LocalDateTime now = LocalDateTime.now();
         // ngày cuối cùng của tháng hiện tại và tháng trước
         LocalDateTime endOfCurrentMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59);
@@ -323,10 +325,23 @@ public class TeacherService {
         List<CourseMonthlyGrowthDTO> result = new ArrayList<>();
         
         final int DAYS_THRESHOLD = 30; 
-
+        List<TeacherCourseDTO> approvedCourses=new ArrayList<>();
+        List<TeacherCourseDTO> rejectedCourses=new ArrayList<>();
+        List<TeacherCourseDTO> pendingCourses=new ArrayList<>();
         for (Course course : teacherCourses) {
             Long courseId = course.getCourseId();
-            
+            TeacherCourseDTO teacherCourse= mapCourseToDTO(course);
+            if(teacherCourse.getApprovalStatus().equals("approved"))
+            {
+                approvedCourses.add(teacherCourse);
+            }
+            else if(teacherCourse.getApprovalStatus().equals("pending"))
+            {
+                pendingCourses.add(teacherCourse);
+            }
+            else{
+                rejectedCourses.add(teacherCourse);
+            }
             int totalStudents = totalCurrentMap.getOrDefault(courseId, 0);
             boolean warning = false; 
 
@@ -355,7 +370,13 @@ public class TeacherService {
         );
         result.add(dto);
     }
-
-    return result;
+    TeacherStatisticsRespone respone=new TeacherStatisticsRespone();
+    respone.setListCourseStatistics(result);
+    respone.setApprovedCourse(approvedCourses);
+    respone.setPendingCourse(pendingCourses);
+    respone.setRejectCourse(rejectedCourses);
+    return respone;
     }
+
+    
 }
