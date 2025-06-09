@@ -97,8 +97,18 @@ public class CourseService {
         return this.courseRepository.findAll(pageRequest);
     }
 
-    public ResultPaginationDTO fetchAllCourses(Pageable pageable) {
-        Page<Course> pageCourses = this.courseRepository.findAll(pageable);
+    public ResultPaginationDTO fetchAllCourses(Pageable pageable,String Status) {
+        Page<Course> pageCourses=null;
+        if(Status==null)
+        {
+              pageCourses = this.courseRepository.findAllByAdmin(pageable);
+        }
+        else
+        {
+             pageCourses = this.courseRepository.findAllByStatus(Status,pageable);
+        }
+             
+       
         ResultPaginationDTO rs = new ResultPaginationDTO();
         Meta meta = new Meta();
 
@@ -182,6 +192,7 @@ public class CourseService {
             (course.getAuthor() != null ? course.getAuthor().getName() : "Unknown"),
             listChapterDTO,
             course.getCreatedAt(),
+            course.getApprovalStatus(),
             isEnrolled,
             isAuthor
         );
@@ -223,13 +234,21 @@ public class CourseService {
     }
 
     public CourseDTO getCourseDetail(Long courseId, Long userId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+        Course course = courseRepository.findCourseByCourseId(courseId);
+        if(course==null)
+        {
+            throw new RuntimeException("course is not approved");
+        }
         return convertToCourseDTO(course, userId);
     }
 
-    public CourseDTO getCourseDetail(Long courseId) {
+    public CourseDTO getCourseDetailByAdmin(Long courseId) {
         return getCourseDetail(courseId, null);
+    }
+
+    public CourseDTO getCourseDetail(Long courseId) {
+        Course course=courseRepository.findCourseByAdmin(courseId);
+        return convertToCourseDTO(course);
     }
 
     public ResultPaginationDTO getCourses(String hourRange, Double minPrice, Double maxPrice, Boolean isPaid,
@@ -392,7 +411,7 @@ public class CourseService {
         }
         
         
-        Double timeCourse = 0.0;
+      
         List<ChaptersDTO> listChapterDTO = new ArrayList<>();
         Set<Chapters> chapters = course.getListChapters();
         if (chapters != null) {
@@ -416,7 +435,6 @@ public class CourseService {
                         dto.setTitle(x.getTitle());
                         dto.setChapterId(c.getChapterId());
                         dto.setCourseId(course.getCourseId());
-                        timeCourse += (x.getDuration() != null ? x.getDuration() : 0.0);
                         listLessonDTO.add(dto);
                     }
                     listLessonDTO.sort(Comparator.comparing(LessonsDTO::getPosition));
@@ -426,8 +444,6 @@ public class CourseService {
             }
             listChapterDTO.sort(Comparator.comparing(ChaptersDTO::getPosition));
         }
-        Double hoursCourse = timeCourse / 3600;
-        Double hour = Math.round(hoursCourse * 10) / 10.0;
         return new CourseDTO(
             course.getCourseId(),
             course.getName(),
@@ -435,15 +451,39 @@ public class CourseService {
             course.getDescription(),
             course.getContents(),
             course.getStar(),
-            hour,
+            course.getHour(),
             course.getPrice(),
             course.getSold(),
             (course.getAuthor() != null ? course.getAuthor().getName() : "Unknown"),
             listChapterDTO,
             course.getCreatedAt(),
+            course.getApprovalStatus(),
             isEnrolled,
             isAuthor
         );
 
+    }
+
+    //confirm course by admin
+    public Object confirmCourse(Long courseId,String reason)
+    {
+        Course course=courseRepository.findCourseByAdmin(courseId);
+        if(!(course!=null && course.getApprovalStatus().equals("pending")))
+        {
+            throw new RuntimeException("You can not approve this course ");
+        }
+        if(reason==null)
+        {
+            course.setApprovalStatus("approved");
+            course.setApprovedAt(now);
+        }
+        else{
+            course=courseRepository.findCourseByAdmin(courseId);
+            course.setApprovalStatus("rejected");
+            course.setRejectionReason(reason);
+            course.setApprovedAt(now);
+        }
+        courseRepository.save(course);
+        return "confirm Success";
     }
 }

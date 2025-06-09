@@ -67,7 +67,7 @@ public class ReportAPI {
     @GetMapping("/sales/top-selling-courses")
     public ResponseEntity<Page<CourseSalesDTO>> getTopSellingCourses(
             // 1. Thay đổi tham số: nhận vào page và size
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         
         // 2. Gọi phương thức service đã được cập nhật

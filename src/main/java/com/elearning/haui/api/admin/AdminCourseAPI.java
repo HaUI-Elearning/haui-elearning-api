@@ -30,6 +30,14 @@ public class AdminCourseAPI {
     public AdminCourseAPI(CourseService courseService) {
         this.courseService = courseService;
     }
+    //confirm course by admin
+    @Operation(summary = "Duyệt / từ chối khóa bởi admin")
+    @PostMapping("/{id}/Confirm")
+    public ResponseEntity<?> ConfirmCourse(@PathVariable("id") Long courseId,@RequestParam (required = false) String reason)
+    {
+        return ResponseEntity.ok(courseService.confirmCourse(courseId, reason));
+    }
+
 
     //Get course by Id
     @GetMapping("/{id}")
@@ -41,17 +49,19 @@ public class AdminCourseAPI {
     }
 
     //Get all course
-    @Operation(summary = "Lấy danh sách khóa học phân trang")
+    @Operation(summary = "Lấy danh sách khóa học phân trang,có thể lấy theo trạng thái Status,không truyền status mặc định get all")
     @GetMapping("")
     public ResponseEntity<ResultPaginationDTO> getAllCourses(
             @RequestParam(value = "current", defaultValue = "1") String currentOptional,
-            @RequestParam(value = "pageSize", defaultValue = "10") String pageSizeOptional
+            @RequestParam(value = "pageSize", defaultValue = "10") String pageSizeOptional,
+            @RequestParam(required=false) String Status
     ) throws IdInvalidException {
 
         int current = Integer.parseInt(currentOptional);
         int pageSize = Integer.parseInt(pageSizeOptional);
         Pageable pageable = PageRequest.of(current -1, pageSize);
-        ResultPaginationDTO result = courseService.fetchAllCourses(pageable);
+        Status= (Status != null) ? Status : null;
+        ResultPaginationDTO result = courseService.fetchAllCourses(pageable,Status);
 
         return ResponseEntity.ok(result);
     }

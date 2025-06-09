@@ -81,29 +81,90 @@ public class TeacherService {
         dto.setAuthor(c.getAuthor().getName());
         dto.setCreatedAt(c.getCreatedAt());
         dto.setCategoryId(courseCategory.getCategory().getCategoryId());
-        
+        dto.setApprovalStatus(c.getApprovalStatus());
         return dto;
     }
     //get all list course created by Teacher
-    public List<TeacherCourseDTO> getAllCourseByTeacher(String username){
-        List<Course> listCourse=courseRepository.getAllCourseByTeacher(username);
-        if (listCourse.isEmpty()) {
-            throw new RuntimeException("No courses found for teacher ");
+    public List<TeacherCourseDTO> getAllCourseByTeacher(String username,String status){
+        List<Course> listCourse=null;
+        if(status == null)
+        {
+             listCourse=courseRepository.getAllCourseByTeacher(username);
         }
+         
+        else 
+        {
+            listCourse=courseRepository.getAllCourseByStatusForTeacher(username, status);
+        }
+
         List<TeacherCourseDTO> listDTO=mapperListCourseToDTO(listCourse);; 
         return listDTO;
         
     }
 
     //get coure{id} created by Teacher 
-    public TeacherCourseDTO getCoursById(String username,Long couseId){
-        Course course =courseRepository.getCoursesIdByTeacher(username, couseId);
+    public TeacherCourseDTO getCoursById(String username,Long courseId){
+        Course course =courseRepository.getCoursesIdByTeacher(username, courseId);
         if(course==null){
             throw new RuntimeException("not found course");
         }
         TeacherCourseDTO courseDTO= mapCourseToDTO(course);
         return courseDTO;
     }
+    //get Notice of Rejection
+    public String getRejectionReason(String username,Long courseId)
+    {
+        Course course =courseRepository.getCoursesIdByTeacher(username, courseId);
+        if(!course.getApprovalStatus().equals("rejected"))
+        {
+            throw new RuntimeException("this course is not rejected");
+        }
+        else
+            return course.getRejectionReason();
+    }
+    //send approval request
+    public TeacherCourseDTO updateAndSendRequestApproval(String username
+       ,Long CourseId
+       ,String content
+       ,String Description
+       ,String name
+       ,Double price
+       ,MultipartFile file,Long CategoryId){
+            Course course =courseRepository.getCoursesIdByTeacher(username, CourseId);
+            if(course==null){
+                throw new RuntimeException("not found course");
+            }
+            Category category=categoryRepository.findByCategoryId(CategoryId);
+            if(category==null){
+                throw new RuntimeException ("Category not found");
+            }
+            if(!course.getApprovalStatus().equals("rejected"))
+            {
+                throw new RuntimeException("This course is not rejected ");
+            }
+            course.setContents(content);
+            course.setDescription(Description);
+            course.setName(name);
+            course.setPrice(price);
+            if (file != null && !file.isEmpty()) {
+            String imageUrl = imgBBService.checkAndUploadImage(file);
+                if (imageUrl != null) {
+                    course.setThumbnail(imageUrl);
+                }
+            }
+            course.setApprovalStatus("pending");
+            course.setRejectionReason(null);
+            courseRepository.save(course);
+            CourseCategory courseCategory=courseCategoryRepository.findByCourse(course);
+            if(courseCategory ==null){
+                throw new RuntimeException("not found course category");
+            }
+            courseCategory.setCategory(category);
+            courseCategoryRepository.save(courseCategory);
+            TeacherCourseDTO courseDTO= mapCourseToDTO(course);
+            return courseDTO;
+    }
+
     //Create Coure by Teacher
     public TeacherCourseDTO CreateCourseByTeacher(
         Long categoryId
@@ -138,6 +199,7 @@ public class TeacherService {
             course.setThumbnail(imageUrl);
         }
         course.setSold(0);
+        course.setApprovalStatus("pending");
         courseRepository.save(course);
         CourseCategory courseCategory=new CourseCategory();
         courseCategory.setCourse(course);
@@ -215,7 +277,7 @@ public class TeacherService {
         Double Total=0.0;
         List<CourseRevenueDTO> dtos = new ArrayList<>();
         for (Course c : courses) {
-            if(c.getPrice()<=0)
+            if(c.getPrice()<=0||c.getApprovalStatus().equals("pending")||c.getApprovalStatus().equals("rejected"))
             {
                 continue;
             }

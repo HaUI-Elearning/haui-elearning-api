@@ -25,6 +25,10 @@ public class FavoriteCourseService {
     }
 
     public FavoriteCourse addFavoriteCourse(FavoriteCourse favoriteCourse) {
+        if(favoriteCourse.getCourse().getApprovalStatus().equals("pending")||favoriteCourse.getCourse().getApprovalStatus().equals("rejected"))
+        {
+            throw new RuntimeException("This course is not approved");
+        }
         CartDetail cartDetail=cartDetailRepository.getCartDetailByCourseId(favoriteCourse.getCourse().getCourseId());
         if(cartDetail!=null){
             cartDetailRepository.delete(cartDetail);
