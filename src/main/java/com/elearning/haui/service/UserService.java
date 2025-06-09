@@ -22,12 +22,19 @@ import com.elearning.haui.domain.entity.FavoriteCourse;
 import com.elearning.haui.domain.entity.Role;
 import com.elearning.haui.domain.entity.User;
 import com.elearning.haui.domain.request.UpdateUserProfileRequest;
+import com.elearning.haui.domain.dto.CourseDTO;
+import com.elearning.haui.domain.dto.CourseRepone;
 import com.elearning.haui.domain.dto.FavoriteCourseDTO;
 import com.elearning.haui.domain.dto.Meta;
 import com.elearning.haui.domain.dto.RegisterDTO;
 import com.elearning.haui.domain.dto.ResultPaginationDTO;
+import com.elearning.haui.domain.dto.TeacherCourseDTO;
+import com.elearning.haui.domain.dto.TeacherDTO;
 import com.elearning.haui.domain.dto.UserDTO;
 import com.elearning.haui.domain.dto.UserDetailsDTO;
+import com.elearning.haui.domain.dto.UserRespone;
+import com.elearning.haui.repository.CourseRepository;
+import com.elearning.haui.repository.EnrollmentRepository;
 import com.elearning.haui.repository.RoleRepository;
 import com.elearning.haui.repository.UserRepository;
 import com.elearning.haui.utils.SecurityUtil;
@@ -38,7 +45,10 @@ public class UserService {
     private final EnrollmentService enrollmentService;
     @Autowired
     RoleRepository roleRepository;
-
+    @Autowired
+    EnrollmentRepository enrollmentRepository;
+    @Autowired
+    CourseRepository courseRepository;
    
     @Autowired
     private SecurityUtil securityUtil;
@@ -61,10 +71,81 @@ public class UserService {
         return this.userRepository.findByEmail(email);
     }
 
-    public UserDTO getUserById(long id) {
-        return this.userRepository.getUserDetailByAdmin(id);
+    public CourseRepone mapToCourseDTO(Course course) {
+    if (course == null) {
+        return null;
     }
+    return new CourseRepone(
+        course.getCourseId(),
+        course.getName(),
+        course.getThumbnail(),
+        course.getDescription(),
+        course.getContents(),
+        course.getStar(),
+        course.getHour(),
+        course.getPrice(),
+        course.getSold(),
+        course.getAuthor() != null ? course.getAuthor().getName() : null,
+        course.getCreatedAt()
+    );
+}
+        public Object mapUserDTO(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
+        if (user.getRole() == null) {
+            throw new IllegalArgumentException("User role cannot be null");
+        }
 
+        List<Enrollment> enrollments = enrollmentRepository.findByUser_UserId(user.getUserId());
+        List<CourseRepone> enrolledCourses = enrollments != null ? enrollments.stream()
+            .map(enrollment -> mapToCourseDTO(enrollment.getCourse()))
+            .collect(Collectors.toList()) : new ArrayList<>();
+        if (user.getRole().getId() == 2) {
+            return new UserDTO(
+                user.getUserId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().getName(),
+                user.getCreatedAt(),
+                user.isEmailVerified(),
+                enrolledCourses
+            );
+        } else if (user.getRole().getId() == 3) { 
+            
+            List<Course> created = courseRepository.getAllCourseByTeacher(user.getUsername());
+            
+            List<CourseRepone> createdCourses = created != null ? created.stream()
+                .map(course -> mapToCourseDTO(course))
+                .collect(Collectors.toList()) : new ArrayList<>();
+            return new TeacherDTO(
+                user.getUserId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().getName(),
+                user.getCreatedAt(),
+                user.isEmailVerified(),
+                enrolledCourses,
+                createdCourses
+            );
+        } else {
+            return new UserDTO(
+                user.getUserId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().getName(),
+                user.getCreatedAt(),
+                user.isEmailVerified(),
+                new ArrayList<>()
+            );
+        }
+    }
+    public Object getUserById(Long UserId)
+    {
+        User user=userRepository.findById(UserId).orElseThrow(()-> new RuntimeException("User not found"));
+        
+        return mapUserDTO(user);
+    }
     public void handleDeleteUser(long id) {
         this.userRepository.deleteById(id);
     }
@@ -116,7 +197,7 @@ public class UserService {
 
     public ResultPaginationDTO fetchAllUserSummaries(Pageable pageable) {
         
-        Page<UserDTO> userPage = userRepository.findUserSummaries(pageable);
+        Page<UserRespone> userPage = userRepository.findUserSummaries(pageable);
 
         ResultPaginationDTO rs = new ResultPaginationDTO();
         Meta mt = new Meta();
@@ -134,7 +215,7 @@ public class UserService {
 
     public ResultPaginationDTO fetchAllUserByRole(Pageable pageable,Long RoleId) {
         
-        Page<UserDTO> userPage = userRepository.findUsersByRole(pageable,RoleId);
+        Page<UserRespone> userPage = userRepository.findUsersByRole(pageable,RoleId);
 
         ResultPaginationDTO rs = new ResultPaginationDTO();
         Meta mt = new Meta();

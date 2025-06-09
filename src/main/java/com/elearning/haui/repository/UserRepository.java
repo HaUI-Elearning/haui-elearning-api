@@ -8,10 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.elearning.haui.domain.dto.UserDTO;
+import com.elearning.haui.domain.dto.UserRespone;
 import com.elearning.haui.domain.entity.User;
-
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByEmail(String email);
     @Query("select u from User u where u.email=:email")
@@ -45,24 +47,23 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT COUNT(u) FROM User u WHERE u.role.name = 'TEACHER' AND u.createdAt BETWEEN :startDate AND :endDate")
     long countNewTeachersBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT new com.elearning.haui.domain.dto.UserDTO(" +
+    @Query("SELECT new com.elearning.haui.domain.dto.UserRespone(" +
            "u.userId, u.name, u.email, u.role.name, u.createdAt, u.emailVerified) " +
            "FROM User u JOIN u.role")
-    Page<UserDTO> findUserSummaries(Pageable pageable);
+    Page<UserRespone> findUserSummaries(Pageable pageable);
 
     @Query("""
-      SELECT new com.elearning.haui.domain.dto.UserDTO(
-          u.userId, u.name, u.email, r.name, u.createdAt, u.emailVerified)
-      FROM User u JOIN u.role r
-      WHERE r.id = :RoleId
-      """)
-Page<UserDTO> findUsersByRole(Pageable pageable, @Param("RoleId") Long RoleId);
+        SELECT new com.elearning.haui.domain.dto.UserRespone(
+            u.userId, u.name, u.email, r.name, u.createdAt, u.emailVerified)
+        FROM User u JOIN u.role r
+        WHERE r.id = :roleId
+        """)
+    Page<UserRespone> findUsersByRole(Pageable pageable, @Param("roleId") Long roleId);
 
-    @Query(""" 
-            SELECT new com.elearning.haui.domain.dto.UserDTO(
-            u.userId, u.name, u.email, u.role.name, u.createdAt, u.emailVerified)
-            FROM User u JOIN u.role 
-            where u.userId=:userId
-            """)
-    UserDTO getUserDetailByAdmin(@Param("userId") Long userId);
+    @Query("""
+        SELECT u
+        FROM User u JOIN u.role
+        WHERE u.userId = :userId
+        """)
+    User getUserDetailByAdmin(@Param("userId") Long userId);
 }
