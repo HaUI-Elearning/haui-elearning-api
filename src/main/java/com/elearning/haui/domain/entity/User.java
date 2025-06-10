@@ -42,6 +42,8 @@ public class User {
 
     @Column(name = "email_verified")
     private boolean emailVerified = false;
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<FavoriteCourse> favoriteCourses;

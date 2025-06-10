@@ -25,7 +25,7 @@ import com.elearning.haui.service.CategoryService;
 import com.elearning.haui.service.CourseService;
 
 @RestController
-@RequestMapping("/api/v1/courses")
+@RequestMapping("/edu-api/courses")
 public class CourseAPI {
     private final CategoryService categoryService;
     private final CourseService courseService;

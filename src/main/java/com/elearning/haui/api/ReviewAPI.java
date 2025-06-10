@@ -20,7 +20,7 @@ import com.elearning.haui.domain.entity.Review;
 import com.elearning.haui.domain.response.ReviewRestpone;
 import com.elearning.haui.service.ReviewService;
 @RestController
-@RequestMapping("/api/v1/Review")
+@RequestMapping("/edu-api/reviews")
 public class ReviewAPI {
     @Autowired
     ReviewService reviewService;
@@ -38,6 +38,14 @@ public class ReviewAPI {
         @RequestParam Double Rating,
         @RequestParam String Comment)
     {
+        if(Rating!=Math.floor(Rating))
+        {
+            return ResponseEntity.badRequest().body("Failed to convert value of type 'Double' to required type 'Long' ");
+        }
+        if(Comment.length()<2||Comment.length()>255)
+        {
+            return ResponseEntity.badRequest().body("Comments require 2 to 255 characters");
+        }
         ReviewDTO rs=reviewService.addReviewByUser(authentication.getName(), CourseID, Rating, Comment);
         return ResponseEntity.ok(rs);
     }

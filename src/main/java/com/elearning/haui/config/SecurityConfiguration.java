@@ -90,6 +90,8 @@ public class SecurityConfiguration {
                         // Cho phép Swagger UI truy cập public
                         .requestMatchers(
                                 "/edu-api/login",
+                                "/edu-api/courses/**",
+                                "/edu-api/signUp",
                                 "/api/v1/register",
                                 "/api/v1/courses/**",
                                 "/api/v1/categories/**",
@@ -101,7 +103,6 @@ public class SecurityConfiguration {
                                 "/api/v1/verify-forgot-password-otp",
                                 "/api/v1/forgot-password/reset",
                                 "/api/v1/resend-forgot-password-otp",
-                                "/edu-api/signUp",
                                 // Swagger OpenAPI
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",

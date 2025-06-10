@@ -267,7 +267,7 @@ public class UserAPI {
 
     // Cập nhập người dùng
     @PutMapping("/users/update-profile")
-    public ResponseEntity<UserDetailsDTO> updateUserProfile(@RequestBody UpdateUserProfileRequest request) {
+    public ResponseEntity<UserDetailsDTO> updateUserProfile(@Valid @RequestBody UpdateUserProfileRequest request) {
         // Lấy thông tin người dùng từ SecurityContext
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName(); // Lấy username từ JWT

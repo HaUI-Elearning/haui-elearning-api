@@ -177,6 +177,10 @@ public class UserService {
         if (updateUserProfileRequest.getIntroduce() != null && !updateUserProfileRequest.getIntroduce().isBlank()) {
             user.setIntroduce(updateUserProfileRequest.getIntroduce());
         }
+         if (updateUserProfileRequest.getPhoneNumber() != null && !updateUserProfileRequest.getPhoneNumber().isBlank()) {
+            user.setPhoneNumber(updateUserProfileRequest.getPhoneNumber());
+        }
+
 
         // Lưu thông tin đã cập nhật
         userRepository.save(user);
