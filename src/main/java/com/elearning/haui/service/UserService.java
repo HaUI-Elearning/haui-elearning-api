@@ -105,6 +105,7 @@ public class UserService {
         if (user.getRole().getId() == 2) {
             return new UserDTO(
                 user.getUserId(),
+                user.getUsername(),
                 user.getName(),
                 user.getEmail(),
                 user.getRole().getName(),
@@ -132,6 +133,7 @@ public class UserService {
         } else {
             return new UserDTO(
                 user.getUserId(),
+                user.getUsername(),
                 user.getName(),
                 user.getEmail(),
                 user.getRole().getName(),
