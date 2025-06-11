@@ -89,6 +89,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authz -> authz
                         // Cho phép Swagger UI truy cập public
                         .requestMatchers(
+                                "/api/v1/login/Admin",
                                 "/api/v1/login",
                                 "/api/v1/register",
                                 "/api/v1/courses/**",
