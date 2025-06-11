@@ -8,6 +8,7 @@ import lombok.*;
 public class UserRespone {
     private Long userId;
     private String name;
+    private String username;
     private String email;
     private String roleName;
     private LocalDateTime createdAt;
