@@ -22,4 +22,5 @@ public class CourseRepone {
     private String author;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+    private String approvalStatus;
 }

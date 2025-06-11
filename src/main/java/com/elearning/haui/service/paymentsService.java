@@ -194,7 +194,8 @@ public class paymentsService {
                     course.getPrice(),
                     course.getSold(),
                     course.getAuthor().getName(),
-                    course.getCreatedAt());
+                    course.getCreatedAt(),
+                    course.getApprovalStatus());
     }
     public List<HistoryPurcharseDTO> mapperListDTO(List<Payment> payments) {
     List<HistoryPurcharseDTO> dtos = new ArrayList<>();

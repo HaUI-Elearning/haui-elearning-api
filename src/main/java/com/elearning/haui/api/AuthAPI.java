@@ -48,7 +48,40 @@ public class AuthAPI {
         // Lấy user đã xác thực
        
         User user = userrepository.findByUsername(authentication.getName());
+        if(user.getRole().getId()==1)
+        {
+            throw new Exception("Can not login with account");
+        }
         
+        // Kiểm tra xác thực email
+        if (!user.isEmailVerified()) {
+            otpService.sendOtpEmail(user, "REGISTER");
+            throw new Exception("user not verify");
+        }
+
+        // create a token
+        String access_token = this.securityUtil.createToken(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        ResLoginDTO resLoginDTO = new ResLoginDTO(access_token);
+        return ResponseEntity.ok().body(resLoginDTO);
+    }
+
+    @PostMapping("/api/v1/login/Admin")
+    public ResponseEntity<ResLoginDTO> loginAdmin(@Valid @RequestBody LoginDTO loginDTO) throws Exception {
+        // Nạp input gồm username/password vào Security
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                loginDTO.getUsername(), loginDTO.getPassword());
+
+        // xác thực người dùng => cần viết hàm loadUserByUsername
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        // Lấy user đã xác thực
+       
+        User user = userrepository.findByUsername(authentication.getName());
+        if(!(user.getRole().getId()==1))
+        {
+            throw new Exception("Can not login with account");
+        }
         
         // Kiểm tra xác thực email
         if (!user.isEmailVerified()) {
