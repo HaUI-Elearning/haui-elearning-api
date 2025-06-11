@@ -86,7 +86,8 @@ public class UserService {
         course.getPrice(),
         course.getSold(),
         course.getAuthor() != null ? course.getAuthor().getName() : null,
-        course.getCreatedAt()
+        course.getCreatedAt(),
+        course.getApprovalStatus()
     );
 }
         public Object mapUserDTO(User user) {
@@ -313,16 +314,12 @@ public class UserService {
 
         user.setRole(role);
         userRepository.save(user);
-
-         // Cập nhật token dựa trên Authentication hiện tại
-        Authentication currentAuth = SecurityContextHolder.getContext().getAuthentication();
-
         //  Tạo Authentication mới có thông tin role mới
         List<GrantedAuthority> updatedAuthorities = List.of(new SimpleGrantedAuthority("ROLE_TEACHER"));
 
-        Authentication newAuth = new UsernamePasswordAuthenticationToken(
-            currentAuth.getPrincipal(),
-            currentAuth.getCredentials(),
+       Authentication newAuth = new UsernamePasswordAuthenticationToken(
+            user.getUsername(), 
+            null,
             updatedAuthorities
         );
 

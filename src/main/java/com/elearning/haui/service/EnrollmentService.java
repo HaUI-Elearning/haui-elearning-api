@@ -59,7 +59,8 @@ public class EnrollmentService {
                 course.getPrice(),
                 course.getSold(),
                 course.getAuthor().getName(),
-                course.getCreatedAt());
+                course.getCreatedAt(),
+                course.getApprovalStatus());
   }
 
   // Lấy danh sách các khóa học mà người dùng đã tham gia và ánh xạ sang CourseDTO
@@ -109,21 +110,21 @@ public class EnrollmentService {
           throw new IllegalStateException("You already own this course and cannot enroll again");
       }
 
-      // Create order (optional, consider if needed for free courses)
-      Order order = new Order();
-      order.setUser(user);
-      order.setCreatedAt(LocalDateTime.now());
-      order.setStatus("free");
-      order.setTotalAmount(0.0);
-      order.setViaCart(false);
-      order = orderRepository.save(order);
+      // // Create order (optional, consider if needed for free courses)
+      // Order order = new Order();
+      // order.setUser(user);
+      // order.setCreatedAt(LocalDateTime.now());
+      // order.setStatus("free");
+      // order.setTotalAmount(0.0);
+      // order.setViaCart(false);
+      // order = orderRepository.save(order);
 
-      // Create order detail 
-      OrderDetail orderDetail = new OrderDetail();
-      orderDetail.setOrder(order);
-      orderDetail.setCourse(course);
-      orderDetail.setPrice(course.getPrice());
-      orderDetailRepository.save(orderDetail);
+      // // Create order detail 
+      // OrderDetail orderDetail = new OrderDetail();
+      // orderDetail.setOrder(order);
+      // orderDetail.setCourse(course);
+      // orderDetail.setPrice(course.getPrice());
+      // orderDetailRepository.save(orderDetail);
 
       // Open free course for user
       Enrollment enrollment = new Enrollment();

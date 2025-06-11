@@ -78,7 +78,8 @@ public class OrderService {
                 course.getPrice(),
                 course.getSold(),
                 course.getAuthor().getName(),
-                course.getCreatedAt());
+                course.getCreatedAt(),
+                course.getApprovalStatus());
     }
 
     public ResultPaginationDTO fetchAllCourses(Pageable pageable,String status) {
@@ -147,7 +148,8 @@ public class OrderService {
                     course.getPrice(),
                     course.getSold(),
                     course.getAuthor().getName(),
-                    course.getCreatedAt());
+                    course.getCreatedAt(),
+                    course.getApprovalStatus());
     }
 
 
