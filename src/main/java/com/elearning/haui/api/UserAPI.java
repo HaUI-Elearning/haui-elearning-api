@@ -164,7 +164,7 @@ public class UserAPI {
 
     //Reset pass
     @PostMapping("/forgot-password/reset")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) throws Exception {
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) throws Exception {
        
         OtpToken token = otpTokenRepository.findValidOtp(request.getOtp(), "FORGOT_PASSWORD",LocalDateTime.now());
 

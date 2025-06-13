@@ -14,6 +14,7 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
+    @Query("SELECT o FROM Order o ORDER BY o.orderId DESC")
     List<Order> findAll();
 
     Order findByOrderId(Long orderId);
@@ -30,6 +31,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("""
             select o from Order o
             where  o.status=:status
+            ORDER BY o.orderId DESC
             """)
     Page<Order> getOdersByStatus(@Param("status") String status,Pageable pageable);
     

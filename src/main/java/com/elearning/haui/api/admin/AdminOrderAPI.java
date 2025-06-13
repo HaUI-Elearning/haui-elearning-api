@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +40,7 @@ public class AdminOrderAPI {
     ){
         int current = Integer.parseInt(currentOptional);
         int pageSize = Integer.parseInt(pageSizeOptional);
-        Pageable pageable = PageRequest.of(current -1, pageSize);
+        Pageable pageable = PageRequest.of(current - 1, pageSize, Sort.by(Sort.Direction.DESC, "orderId"));
         ResultPaginationDTO result = orderService.fetchAllCourses(pageable,Status);
 
         return ResponseEntity.ok(result);
