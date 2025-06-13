@@ -139,14 +139,12 @@ public class PaymentsAPI {
             orderRepository.save(order);
 
             // Delete cart if via cart
-            if (order.isViaCart()) {
-                Cart cart = cartRepository.findByUser(order.getUser()).orElse(null);
+            Cart cart = cartRepository.findByUser(order.getUser()).orElse(null);
                 if (cart != null && order.getOrderDetails() != null) {
                     List<Long> purchasedCourseIds = order.getOrderDetails().stream()
                             .map(detail -> detail.getCourse().getCourseId())
                             .collect(Collectors.toList());
                     cartService.removeCartDetailsByCartAndCourseIds(cart.getCartId(), purchasedCourseIds);
-                }
             }
 
             // Open course for user
