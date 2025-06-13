@@ -188,8 +188,8 @@ public LessonsDTO createLessonsByTeacher(
         } else {
             System.out.println("videoResult is null");
         }
-        Course course=courseRepository.findById(chapter.getCourse().getCourseId()).orElseThrow(()->new RuntimeException("Not found course"));
-        CaculalateHourseForCourse(course);
+        lessonsRepository.save(lesson);
+        CaculalateHourseForCourse(chapter.getCourse());
         LessonsDTO dto = mapLessonToDTO(lesson);
         return dto;
     } catch (Exception e) {
@@ -290,9 +290,9 @@ public LessonsDTO updateLessonsByTeacher(
         } else {
             System.out.println("videoResult is null");
         }
+
         lessonsRepository.save(lesson);
-        Course course=courseRepository.findById(chapter.getCourse().getCourseId()).orElseThrow(()->new RuntimeException("Not found course"));
-        CaculalateHourseForCourse(course);
+        CaculalateHourseForCourse(chapter.getCourse());
         LessonsDTO dto = mapLessonToDTO(lesson);
         return dto;
     } catch (Exception e) {
@@ -310,8 +310,7 @@ public boolean deleteLesson(String username, Long chapterId, Long lessonId) {
     int deletedPosition = lesson.getPosition();
     lessonsRepository.delete(lesson);
     Chapters chapter=chaptersRepository.findById(chapterId).orElseThrow(()-> new RuntimeException("Chapter not found"));
-    Course course=courseRepository.findById(chapter.getCourse().getCourseId()).orElseThrow(()->new RuntimeException("Not found course"));
-    CaculalateHourseForCourse(course);
+    CaculalateHourseForCourse(chapter.getCourse());
 
     // set olds position 
     List<Lessons> remainingLessons = lessonsRepository.findByChapterId(chapterId);
