@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,14 +26,17 @@ public class FavoriteCourseService {
     }
 
     public FavoriteCourse addFavoriteCourse(FavoriteCourse favoriteCourse) {
-        if(favoriteCourse.getCourse().getApprovalStatus().equals("pending")||favoriteCourse.getCourse().getApprovalStatus().equals("rejected"))
-        {
+        if (!"approved".equals(favoriteCourse.getCourse().getApprovalStatus())) {
             throw new RuntimeException("This course is not approved");
         }
-        CartDetail cartDetail=cartDetailRepository.getCartDetailByCourseId(favoriteCourse.getCourse().getCourseId());
-        if(cartDetail!=null){
-            cartDetailRepository.delete(cartDetail);
-        }
+
+        Long courseId = favoriteCourse.getCourse().getCourseId();
+        Long userId = favoriteCourse.getUser().getUserId();
+
+        Optional<CartDetail> cartDetailOptional = cartDetailRepository.findByCourse_CourseIdAndCart_User_UserId(courseId, userId);
+
+        cartDetailOptional.ifPresent(cartDetailRepository::delete);
+
         return favoriteCourseRepository.save(favoriteCourse);
     }
 

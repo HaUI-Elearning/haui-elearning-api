@@ -23,10 +23,7 @@ public interface CartDetailRepository extends JpaRepository<CartDetail, Long> {
     @Modifying
     void deleteByCart_CartIdAndCourse_CourseIdIn(Long cartId, List<Long> courseIds);
 
-    @Query("""
-            select cd from CartDetail cd
-            where cd.course.courseId=:courseId
-            """)
-    CartDetail getCartDetailByCourseId(@Param("courseId") Long courseId);
+
+    Optional<CartDetail> findByCourse_CourseIdAndCart_User_UserId(Long courseId, Long userId);
 
 }
