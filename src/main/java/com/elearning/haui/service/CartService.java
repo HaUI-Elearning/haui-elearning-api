@@ -67,54 +67,55 @@ public class CartService {
 
     }
 
+    @Transactional 
     public CartDTO addCourseToCart(String username, Long courseId) {
-        // Lấy user từ username
+       
         User user = userRepository.findByUsername(username);
         if (user == null) {
             throw new RuntimeException("User not found for username: " + username);
         }
 
-        // Kiểm tra khóa học
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
-        if(course.getPrice()==0){
-            throw new RuntimeException("cannot add course to Cart with price 0 VND");
+
+        if (course.getPrice() == 0) {
+            throw new RuntimeException("Cannot add a free course to the cart.");
         }
-        if(course.getApprovalStatus().equals("pending")||course.getApprovalStatus().equals("rejected"))
-        {
+        if (!"approved".equals(course.getApprovalStatus())) {
             throw new RuntimeException("This course is not approved.");
         }
-        // Kiểm tra giỏ hàng
-        Cart cart = cartRepository.findByUser(user).orElse(null);
 
-        if (cart == null) {
-            // Tạo giỏ hàng mới nếu chưa có
-            cart = new Cart();
-            cart.setUser(user);
-            cart.setCreatedAt(LocalDateTime.now());
-            cartRepository.save(cart); 
-        }
+        // 3. Lấy giỏ hàng hoặc tạo mới
+        Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
+            Cart newCart = new Cart();
+            newCart.setUser(user);
+            return newCart; 
+        });
 
-        // Kiểm tra chi tiết giỏ hàng (CartDetail)
-        CartDetail cartDetail = cartDetailRepository.findByCartAndCourse(cart, course).orElse(null);
-
-        if (cartDetail != null) {
-            throw new RuntimeException("Course already exists in the cart. Skipping addition.");
-        } else {
-            CartDetail newCartDetail = new CartDetail();
-            newCartDetail.setCart(cart);
-            newCartDetail.setCourse(course);
-            newCartDetail.setPrice(course.getPrice()); // Lưu giá của khóa học
-            cartDetailRepository.save(newCartDetail);
-            FavoriteCourse favoriteCourse=favoriteCourseRepository.findByCourseIdAndUserId(newCartDetail.getCourse().getCourseId(),user.getUserId());
-            if(favoriteCourse!=null){
-                 favoriteCourseRepository.delete(favoriteCourse);
-            }
-           
-        }
-        CartDTO dto= mapperCartToDTO(cart);
-        return dto;
         
+        boolean courseExists = cart.getCartDetails().stream()
+                .anyMatch(detail -> detail.getCourse().getCourseId().equals(courseId));
+
+        if (courseExists) {
+            throw new RuntimeException("Course already exists in the cart.");
+        }
+
+        // Tạo CartDetail mới
+        CartDetail newCartDetail = new CartDetail();
+        newCartDetail.setCourse(course);
+        newCartDetail.setPrice(course.getPrice());
+        
+        newCartDetail.setCart(cart); 
+        cart.getCartDetails().add(newCartDetail);
+
+        cartRepository.save(cart);
+
+        FavoriteCourse favoriteCourse = favoriteCourseRepository.findByCourseIdAndUserId(courseId, user.getUserId());
+        if (favoriteCourse != null) {
+            favoriteCourseRepository.delete(favoriteCourse);
+        }
+
+        return mapperCartToDTO(cart);
     }
 
     public CartDTO getCartDetails(String username) {
