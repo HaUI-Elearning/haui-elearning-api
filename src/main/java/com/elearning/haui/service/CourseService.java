@@ -317,8 +317,8 @@ public class CourseService {
 
     private List<Course> filterByStarRating(List<Course> courses, String starRating) {
         switch (starRating) {
-            case ">=3": return courses.stream().filter(course -> course.getStar() >= 3).toList();
-            case ">=4": return courses.stream().filter(course -> course.getStar() >= 4).toList();
+            case "3": return courses.stream().filter(course -> course.getStar() >= 3).toList();
+            case "4": return courses.stream().filter(course -> course.getStar() >= 4).toList();
             case "5": return courses.stream().filter(course -> course.getStar() == 5).toList();
             default: return courses;
         }

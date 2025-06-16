@@ -137,10 +137,13 @@ public class ReviewService {
         if (!Objects.equals(rv.getUser().getUserId(), user.getUserId())) {
             throw new RuntimeException("User is not authorized to update this review.");
         }
+        Course course=rv.getCourse();
         rv.setRating(Rating);
         rv.setComment(Comment);
         rv.setCreatedAt(rv.getCreatedAt());
         reviewRepository.save(rv);
+        course.setStar(AVGRatting(course.getCourseId()));
+        courseRepository.save(course);
         return mapReviewToDTO(rv, true);
 
     }
@@ -157,6 +160,9 @@ public class ReviewService {
                 throw new RuntimeException("User is not authorized to delete this review.");
         }
         reviewRepository.delete(review);
+        Course course=review.getCourse();
+        course.setStar(AVGRatting(course.getCourseId()));
+        courseRepository.save(course);
         return "Delete review success";
     }
 
