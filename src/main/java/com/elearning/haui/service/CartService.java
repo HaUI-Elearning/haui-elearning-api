@@ -127,7 +127,11 @@ public class CartService {
         }
 
         // Lấy giỏ hàng của người dùng
-        Cart cart = cartRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Cart not found"));
+        Cart cart = cartRepository.findByUser(user).orElseGet(() -> {
+            Cart newCart = new Cart();
+            newCart.setUser(user);
+            return newCart; 
+        });
 
         // Kiểm tra nếu giỏ hàng chưa có cartDetails, khởi tạo danh sách rỗng
         if (cart.getCartDetails() == null) {
