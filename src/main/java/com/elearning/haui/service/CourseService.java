@@ -300,7 +300,7 @@ public class CourseService {
                             .filter(course -> course.getHour() >= 9 && course.getHour() < 12)
                             .collect(Collectors.toList()));
                     break;
-                case "more":
+                case "Lâu hơn":
                     filterCourses.addAll(courses.stream()
                             .filter(course -> course.getHour() >= 12)
                             .collect(Collectors.toList()));
