@@ -18,7 +18,8 @@ public class CorsConfig {
 
         // Định nghĩa các nguồn cho phép (origins) - nơi mà yêu cầu có thể xuất phát từ
         // đó
-        configuration.setAllowedOrigins(Arrays.asList("http://127.0.0.1:5173","http://localhost:5174", "http://localhost:5173","http://127.0.0.1:5500/"));
+        // configuration.setAllowedOrigins(Arrays.asList("http://127.0.0.1:5173","http://localhost:5174", "http://localhost:5173","http://127.0.0.1:5500/"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
 
         // Định nghĩa các phương thức HTTP cho phép (GET, POST, PUT, DELETE, OPTIONS)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
