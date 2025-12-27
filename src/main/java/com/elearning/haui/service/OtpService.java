@@ -70,8 +70,7 @@ public void sendOtpEmail(User user, String type) {
     String subject = type.equals("REGISTER") ? "Xác thực đăng ký" : "Khôi phục mật khẩu";
     String body = "Mã OTP của bạn là: " + otp;
     emailService.send(user.getEmail(), subject, body);
-    // long end = System.currentTimeMillis();
-    // System.out.println(" Thời gian gửi OTP qua email: " + (end - start) + "ms");
+   
 }
 
 
