@@ -1,15 +1,13 @@
 🎓 Haui E-Learning Backend API
-    Backend cho hệ thống E-Learning (học trực tuyến), xây dựng bằng Spring Boot, cung cấp RESTful API và giao diện JSP server-side.
+    Backend cho hệ thống E-Learning (học trực tuyến), xây dựng bằng Spring Boot, cung cấp RESTful API .
 
 🚀 Tech Stack
 
     Java 11+, Spring Boot
-
-    Spring MVC, Spring Data JPA
+    
+    Spring Data JPA
 
     Maven
-
-    JSP
 
     MySQL / PostgreSQL
 
